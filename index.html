@@ -317,22 +317,14 @@
         if(id === 'tab-trainer') updateBagIcon(); 
     }
 
-    /* FUNÇÃO DA MOCHILA DINÂMICA */
     function updateBagIcon() {
         const sex = document.getElementById('t-sex').value;
         const icon = document.getElementById('bag-icon-display');
         icon.classList.remove('bag-male', 'bag-female');
-
-        if (sex === "Masculino") {
-            icon.classList.add('bag-male');
-        } else if (sex === "Feminino") {
-            icon.classList.add('bag-female');
-        } else if (sex === "Outro") {
-            const randomClass = Math.random() > 0.5 ? 'bag-male' : 'bag-female';
-            icon.classList.add(randomClass);
-        } else {
-            icon.classList.add('bag-male');
-        }
+        if (sex === "Masculino") icon.classList.add('bag-male');
+        else if (sex === "Feminino") icon.classList.add('bag-female');
+        else if (sex === "Outro") icon.classList.add(Math.random() > 0.5 ? 'bag-male' : 'bag-female');
+        else icon.classList.add('bag-male');
     }
 
     async function init() {
@@ -499,6 +491,7 @@
         }
     }
 
+    /* CONVERSOR ATUALIZADO CONFORME EXEMPLO */
     function convertSheet() {
         const d = (id) => document.getElementById(id).value || "---";
         const bagLines = document.getElementById('t-bag').value.split('\n').filter(l => l.trim() !== "");
@@ -506,10 +499,23 @@
         let pkmnText = "";
         for(let i=1; i<=6; i++) {
             const pName = document.getElementById(`p${i}-name`).value;
-            if(pName) pkmnText += `╰┈➤ ${document.getElementById(`p${i}-nick`).value || pName} (Lv. ${document.getElementById(`p${i}-lvl`).value})${document.getElementById(`p${i}-is-shiny`).value === 'true' ? ' ✨' : ''}\n`;
+            const pNick = document.getElementById(`p${i}-nick`).value;
+            const pLvl = document.getElementById(`p${i}-lvl`).value;
+            if(pName) pkmnText += `╰┈➤ ${pNick || pName} (Lv. ${pLvl})${document.getElementById(`p${i}-is-shiny`).value === 'true' ? ' ✨' : ''}\n`;
             else pkmnText += `╰┈➤ Vazio\n`;
         }
-        const template = `‎‧₊˚✧Ficha do Treinador✧˚₊‧‎\n- Nome: ${d('t-name')}\n- Região: ${d('t-region')} (${d('t-city')})\n- Dinheiro: ₽ ${d('t-money')}\n\n━━━━❰MOCHILA❱━━━━\n${bagText}\n━━━━▣━━◤POKÉMONS◢━━▣━━━━━\n${pkmnText}`;
+        
+        const template = `‎‧₊˚✧Ficha do Treinador✧˚₊‧‎\n` +
+            `- Nome: ${d('t-name')}\n` +
+            `- Sexo: ${d('t-sex')}\n` +
+            `- Idade: ${d('t-age')}\n` +
+            `- Altura: ${d('t-height')}\n` +
+            `- Dinheiro: ₽ ${d('t-money')}\n\n` +
+            `━━━━❰BOLSA❱━━━━\n` +
+            `${bagText}\n` +
+            `━━━━▣━━◤POKÉMONS◢━━▣━━━━━\n` +
+            `${pkmnText}`;
+            
         const res = document.getElementById('convert-result');
         res.innerText = template; res.style.display = 'block';
     }
