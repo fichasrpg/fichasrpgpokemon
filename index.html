@@ -3,121 +3,146 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PokéSheet Premium - RPG</title>
+    <title>PokéSheet Cloud v5.0</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
     <style>
         :root {
-            --bg: #0f172a; --card: #1e293b; --primary: #ef4444; 
-            --secondary: #3b82f6; --text: #f8fafc; --muted: #94a3b8;
-            --border: #334155; --input: #0f172a;
+            --bg: #0b0f1a; --card: #161e2d; --primary: #ff4747; 
+            --secondary: #4785ff; --text: #f1f5f9; --muted: #64748b;
+            --border: #2d3748; --input: #0b0f1a;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); padding: 15px; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); padding: 10px; }
+        .container { max-width: 1100px; margin: auto; display: flex; flex-direction: column; gap: 15px; }
 
-        .container { max-width: 1100px; margin: auto; display: flex; flex-direction: column; gap: 20px; }
-
-        /* Painel do Treinador com Avatar */
-        .panel { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 20px; box-shadow: 0 10px 15px rgba(0,0,0,0.3); }
-        .header-top { border-top: 4px solid var(--primary); display: flex; gap: 20px; align-items: center; }
-
-        .avatar-upload {
-            width: 100px; height: 100px; min-width: 100px;
-            background: var(--input); border: 2px dashed var(--muted);
-            border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            cursor: pointer; overflow: hidden; position: relative;
+        /* Auth Bar Premium */
+        .auth-bar { 
+            background: linear-gradient(90deg, #1a202c, #2d3748); 
+            padding: 15px 20px; border-radius: 12px; 
+            display: flex; gap: 12px; align-items: center; 
+            border: 1px solid var(--border); justify-content: space-between;
         }
-        .avatar-upload img { width: 100%; height: 100%; object-fit: cover; }
-        .avatar-upload span { font-size: 0.6rem; color: var(--muted); text-align: center; padding: 5px; }
+        .auth-inputs { display: flex; gap: 8px; align-items: center; }
+        .auth-bar input { background: #000; border: 1px solid var(--border); color: white; padding: 8px; border-radius: 6px; width: 140px; }
 
-        .grid-header { flex-grow: 1; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+        /* Layout Principal */
+        .panel { background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 20px; box-shadow: 0 15px 25px rgba(0,0,0,0.4); }
+        .header-top { border-left: 6px solid var(--primary); display: flex; gap: 25px; flex-wrap: wrap; align-items: center; }
 
-        label { font-size: 0.75rem; font-weight: 600; color: var(--muted); text-transform: uppercase; margin-bottom: 5px; display: block; }
-        input, select, textarea { background: var(--input); border: 1px solid var(--border); color: #fff; padding: 10px; border-radius: 8px; width: 100%; outline: none; font-size: 0.9rem; }
+        /* Avatar System */
+        .avatar-wrapper { position: relative; }
+        .avatar-box { 
+            width: 130px; height: 130px; background: var(--input); border: 2px dashed var(--muted); 
+            border-radius: 20px; overflow: hidden; cursor: pointer; transition: 0.3s;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .avatar-box:hover { border-color: var(--secondary); background: #1a202c; }
+        .avatar-box img { width: 100%; height: 100%; object-fit: cover; }
+        .avatar-box span { font-size: 0.7rem; color: var(--muted); text-align: center; font-weight: 600; }
+
+        /* Grid System */
+        .grid-header { flex: 1; display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 15px; }
+        label { font-size: 0.65rem; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; display: block; }
+        input, select, textarea { background: var(--input); border: 1px solid var(--border); color: #fff; padding: 10px; border-radius: 8px; width: 100%; outline: none; transition: 0.2s; }
+        input:focus { border-color: var(--secondary); }
+
+        .team-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 18px; }
+        .pkmn-card { 
+            background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 15px; 
+            display: flex; flex-direction: column; gap: 12px; position: relative;
+        }
+
+        .sprite-box { width: 70px; height: 70px; background: #000; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+        .sprite-box img { width: 65px; height: 65px; }
+
+        .btn { padding: 10px 18px; border-radius: 8px; border: none; font-weight: 700; cursor: pointer; transition: 0.2s; text-transform: uppercase; font-size: 0.75rem; }
+        .btn-blue { background: var(--secondary); color: white; }
+        .btn-green { background: #10b981; color: white; }
         
-        /* Cards do Time */
-        .team-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 15px; }
-        .pkmn-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 15px; display: flex; flex-direction: column; gap: 12px; }
-        .pkmn-top { display: grid; grid-template-columns: 80px 1fr; gap: 12px; }
-        .sprite-box { width: 80px; height: 80px; background: #0f172a; border-radius: 12px; border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; }
-        .sprite-box img { width: 75px; height: 75px; display: none; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
+        /* Modal */
+        #crop-modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95); z-index: 9999; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .crop-area { max-width: 80%; max-height: 70vh; }
 
-        .dropdown { position: absolute; top: 100%; left: 0; right: 0; background: #1e293b; border: 1px solid var(--secondary); border-radius: 8px; max-height: 150px; overflow-y: auto; z-index: 10; display: none; }
-        .dropdown div { padding: 10px; cursor: pointer; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
-        .dropdown div:hover { background: var(--secondary); }
-
-        .moves-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; }
-        .btn-save { background: var(--secondary); color: white; border: none; padding: 15px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; text-transform: uppercase; margin-top: 10px; }
-        .status { text-align: center; font-size: 0.8rem; color: #10b981; margin-top: 5px; opacity: 0; }
-        .status.show { opacity: 1; }
+        /* Estilização para o seletor de golpes e cidades */
+        .search-results { position: absolute; top: 100%; left: 0; right: 0; background: #1a202c; border: 1px solid var(--secondary); border-radius: 8px; z-index: 100; max-height: 200px; overflow-y: auto; display: none; }
+        .search-results div { padding: 10px; cursor: pointer; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+        .search-results div:hover { background: var(--secondary); }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="panel header-top">
-        <div class="avatar-upload" onclick="document.getElementById('avatar-input').click()">
-            <img id="avatar-img" style="display:none">
-            <span id="avatar-placeholder">Foto do Treinador</span>
+    <div class="auth-bar">
+        <div style="font-weight: 800; color: var(--primary);">POKÉSHEET CLOUD</div>
+        <div class="auth-inputs">
+            <input type="text" id="user-id" placeholder="Usuário">
+            <input type="password" id="user-pass" placeholder="Senha">
+            <button class="btn btn-green" onclick="cloudAction('save')">Salvar</button>
+            <button class="btn btn-blue" onclick="cloudAction('load')">Entrar</button>
         </div>
-        <input type="file" id="avatar-input" hidden accept="image/*" onchange="loadAvatar(event)">
-        
+    </div>
+
+    <div class="panel header-top">
+        <div class="avatar-wrapper">
+            <div class="avatar-box" onclick="document.getElementById('file-input').click()">
+                <img id="main-avatar" style="display:none">
+                <span id="placeholder">ADICIONAR<br>AVATAR</span>
+            </div>
+            <input type="file" id="file-input" hidden accept="image/*">
+        </div>
+
         <div class="grid-header">
-            <div><label>Nome</label><input type="text" id="t-name" class="save" placeholder="Nome"></div>
+            <div><label>Nome do Treinador</label><input type="text" id="t-name" class="save"></div>
             <div>
                 <label>Classe</label>
                 <select id="t-class" class="save">
                     <option value="">Selecionar...</option>
                     <option value="Treinador">Treinador</option>
                     <option value="Coordenador">Coordenador</option>
-                    <option value="Criador">Criador</option>
-                    <option value="Guarda">Guarda</option>
-                    <option value="Policial">Policial</option>
-                    <option value="Fotógrafo">Fotógrafo</option>
-                    <option value="Enfermeiro">Enfermeiro</option>
-                    <option value="Arqueólogo">Arqueólogo</option>
-                    <option value="Professor">Professor</option>
+                    <option value="Rocket">Equipe Rocket</option>
                     <option value="Pesquisador">Pesquisador</option>
-                    <option value="Fazendeiro">Fazendeiro</option>
-                    <option value="Rocket">Rocket</option>
                     <option value="Cientista">Cientista</option>
                 </select>
             </div>
             <div>
-                <label>Região</label>
-                <select id="t-region" class="save" onchange="updateCities()">
-                    <option value="">Selecionar...</option>
-                    <option value="Kanto">Kanto</option>
-                    <option value="Johto">Johto</option>
-                    <option value="Hoenn">Hoenn</option>
-                    <option value="Sinnoh">Sinnoh</option>
-                    <option value="Unova">Unova</option>
-                    <option value="Kalos">Kalos</option>
-                    <option value="Alola">Alola</option>
-                    <option value="Galar">Galar</option>
-                    <option value="Paldea">Paldea</option>
-                </select>
+                <label>Região Natal</label>
+                <select id="t-region" class="save" onchange="updateCities()"></select>
             </div>
             <div>
-                <label>Cidade</label>
-                <select id="t-city" class="save">
-                    <option value="">Aguardando região...</option>
-                </select>
+                <label>Cidade Natal</label>
+                <select id="t-city" class="save"></select>
             </div>
         </div>
     </div>
 
-    <div class="team-grid" id="team"></div>
+    <div id="team" class="team-grid"></div>
 
     <div class="panel">
-        <label>Notas e Inventário</label>
-        <textarea id="notes" rows="4" class="save" placeholder="Anote seus itens e jornada..."></textarea>
-        <button class="btn-save" onclick="exportData()">Exportar Ficha (.JSON)</button>
-        <div id="status" class="status">💾 Sincronizado!</div>
+        <label>Diário de Bordo & Itens</label>
+        <textarea id="notes" class="save" rows="4" placeholder="Anote o progresso da sua jornada..."></textarea>
     </div>
 </div>
 
+<div id="crop-modal">
+    <div class="crop-area"><img id="image-to-crop"></div>
+    <button class="btn btn-green" style="margin-top:20px" onclick="finishCrop()">Finalizar e Salvar</button>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+
 <script>
+    // --- CONFIGURAÇÃO DO SUPABASE ---
+    const SUPABASE_URL = 'https://pjggfdjixenopkiiugmj.supabase.co'; 
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBqZ2dmZGppeGVub3BraWl1Z21qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMjIwMDcsImV4cCI6MjA5MTY5ODAwN30.QWr9d3qT2216to7VOEmc_hzu-g789FTLdYdDUtUosk0';
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    let cropper;
     let allPkmn = [];
     const moveCache = {};
     const worldData = {
@@ -135,8 +160,11 @@
     function format(str) { return str.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '); }
 
     async function init() {
+        const regSelect = document.getElementById('t-region');
+        regSelect.innerHTML = '<option value="">Região...</option>';
+        Object.keys(worldData).forEach(r => regSelect.innerHTML += `<option value="${r}">${r}</option>`);
+        
         renderSlots();
-        loadSaved();
         const r = await fetch('https://pokeapi.co/api/v2/pokemon?limit=1025');
         const d = await r.json();
         allPkmn = d.results;
@@ -144,23 +172,23 @@
 
     function renderSlots() {
         const team = document.getElementById('team');
-        const natures = ['Adamant', 'Bashful', 'Bold', 'Brave', 'Calm', 'Careful', 'Docile', 'Gentle', 'Hardy', 'Hasty', 'Impish', 'Jolly', 'Lonely', 'Mild', 'Modest', 'Naive', 'Naughty', 'Quiet', 'Quirky', 'Rash', 'Relaxed', 'Sassy', 'Serious', 'Timid'];
+        const nats = ['Adamant', 'Bashful', 'Bold', 'Brave', 'Calm', 'Careful', 'Docile', 'Gentle', 'Hardy', 'Hasty', 'Impish', 'Jolly', 'Lonely', 'Mild', 'Modest', 'Naive', 'Naughty', 'Quiet', 'Quirky', 'Rash', 'Relaxed', 'Sassy', 'Serious', 'Timid'];
         for(let i=1; i<=6; i++) {
             team.innerHTML += `
                 <div class="pkmn-card">
-                    <div class="pkmn-top">
-                        <div class="sprite-box"><img id="img-${i}"></div>
-                        <div style="position:relative">
+                    <div style="display:flex; gap:12px; align-items:center;">
+                        <div class="sprite-box"><img id="img-${i}" style="display:none"></div>
+                        <div style="flex:1; position:relative">
                             <label>Pokémon #${i}</label>
-                            <input type="text" id="p${i}-name" class="save" placeholder="Buscar..." oninput="doSearch(${i})" autocomplete="off">
-                            <div id="drop-${i}" class="dropdown"></div>
+                            <input type="text" id="p${i}-name" class="save" oninput="doSearch(${i})" placeholder="Nome da espécie...">
+                            <div id="drop-${i}" class="search-results"></div>
                         </div>
                     </div>
-                    <div style="display:grid; grid-template-columns: 1fr 60px; gap:10px">
-                        <select id="p${i}-nature" class="save"><option value="">Nature</option>${natures.map(n=>`<option value="${n}">${n}</option>`).join('')}</select>
+                    <div style="display:grid; grid-template-columns: 1fr 65px; gap:8px">
+                        <select id="p${i}-nature" class="save"><option value="">Nature</option>${nats.map(n=>`<option value="${n}">${n}</option>`).join('')}</select>
                         <input type="number" id="p${i}-lvl" class="save" value="1" onchange="updateMoves(${i})">
                     </div>
-                    <div class="moves-grid">
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:6px">
                         <select id="p${i}-m1" class="save"><option value="">Golpe 1</option></select>
                         <select id="p${i}-m2" class="save"><option value="">Golpe 2</option></select>
                         <select id="p${i}-m3" class="save"><option value="">Golpe 3</option></select>
@@ -170,43 +198,101 @@
         }
     }
 
-    function updateCities() {
-        const region = document.getElementById('t-region').value;
-        const citySelect = document.getElementById('t-city');
-        const savedCity = localStorage.getItem('t-city');
-        citySelect.innerHTML = '<option value="">Selecionar cidade...</option>';
-        if(worldData[region]) {
-            worldData[region].forEach(c => citySelect.innerHTML += `<option value="${c}">${c}</option>`);
+    // --- LÓGICA DE NUVEM (SUPABASE) ---
+    async function cloudAction(type) {
+        const user = document.getElementById('user-id').value;
+        const pass = document.getElementById('user-pass').value;
+        if(!user || !pass) return alert("Preencha usuário e senha!");
+
+        if(type === 'save') {
+            const sheetData = {};
+            document.querySelectorAll('.save').forEach(el => sheetData[el.id] = el.value);
+            const avatar = document.getElementById('main-avatar').src;
+
+            const { data, error } = await supabase
+                .from('fichas')
+                .upsert({ 
+                    username: user, 
+                    password: pass, 
+                    data: sheetData,
+                    avatar: avatar 
+                }, { onConflict: 'username' });
+
+            if(error) alert("Erro ao salvar: " + error.message);
+            else alert("Ficha sincronizada na nuvem!");
+        } else {
+            const { data, error } = await supabase
+                .from('fichas')
+                .select('*')
+                .eq('username', user)
+                .single();
+
+            if(data && data.password === pass) {
+                Object.keys(data.data).forEach(id => {
+                    const el = document.getElementById(id);
+                    if(el) el.value = data.data[id];
+                });
+                if(data.avatar) {
+                    const img = document.getElementById('main-avatar');
+                    img.src = data.avatar; img.style.display = 'block';
+                    document.getElementById('placeholder').style.display = 'none';
+                }
+                updateCities();
+                // Recarregar sprites e golpes
+                for(let i=1; i<=6; i++) {
+                    const name = document.getElementById(`p${i}-name`).value;
+                    if(name) fetchMovesSilently(i, name.toLowerCase().replace(/ /g, '-'));
+                }
+                alert("Bem-vindo de volta, " + user + "!");
+            } else {
+                alert("Usuário não encontrado ou senha incorreta.");
+            }
         }
-        if(savedCity) citySelect.value = savedCity;
     }
 
-    function loadAvatar(e) {
+    // --- LÓGICA DE FOTO ---
+    document.getElementById('file-input').addEventListener('change', function(e) {
         const reader = new FileReader();
-        reader.onload = function() {
-            const dataURL = reader.result;
-            const img = document.getElementById('avatar-img');
-            img.src = dataURL; img.style.display = 'block';
-            document.getElementById('avatar-placeholder').style.display = 'none';
-            localStorage.setItem('userAvatar', dataURL);
+        reader.onload = (event) => {
+            const img = document.getElementById('image-to-crop');
+            img.src = event.target.result;
+            document.getElementById('crop-modal').style.display = 'flex';
+            if(cropper) cropper.destroy();
+            cropper = new Cropper(img, { aspectRatio: 1, viewMode: 1 });
         };
         reader.readAsDataURL(e.target.files[0]);
+    });
+
+    function finishCrop() {
+        const canvas = cropper.getCroppedCanvas({ width: 250, height: 250 });
+        const dataURL = canvas.toDataURL();
+        const mainImg = document.getElementById('main-avatar');
+        mainImg.src = dataURL; mainImg.style.display = 'block';
+        document.getElementById('placeholder').style.display = 'none';
+        document.getElementById('crop-modal').style.display = 'none';
     }
 
-    // (As funções doSearch, selectPkmn, updateMoves, save e loadSaved permanecem com a lógica otimizada da v3.1)
+    // --- SUPORTE POKÉMON ---
+    function updateCities() {
+        const r = document.getElementById('t-region').value;
+        const s = document.getElementById('t-city');
+        s.innerHTML = '<option value="">Cidade...</option>';
+        if(worldData[r]) worldData[r].forEach(c => s.innerHTML += `<option value="${c}">${c}</option>`);
+    }
+
     function doSearch(slot) {
         const q = document.getElementById(`p${slot}-name`).value.toLowerCase();
         const drop = document.getElementById(`drop-${slot}`);
         drop.innerHTML = "";
-        if(q.length < 2) { drop.style.display="none"; return; }
+        if(q.length < 2) return drop.style.display = "none";
         const hits = allPkmn.filter(p => p.name.includes(q)).slice(0, 5);
         if(hits.length) {
-            drop.style.display="block";
+            drop.style.display = "block";
             hits.forEach(p => {
-                const div = document.createElement('div');
-                div.innerText = format(p.name);
-                div.onclick = () => selectPkmn(slot, p.name);
-                drop.appendChild(div);
+                const d = document.createElement('div');
+                d.innerText = format(p.name);
+                d.onclick = () => selectPkmn(slot, p.name);
+                drop.appendChild(d);
             });
         }
     }
@@ -214,78 +300,39 @@
     async function selectPkmn(slot, name) {
         document.getElementById(`p${slot}-name`).value = format(name);
         document.getElementById(`drop-${slot}`).style.display = "none";
-        const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${name}`);
-        const data = await res.json();
-        document.getElementById(`img-${slot}`).src = data.sprites.other['official-artwork'].front_default || data.sprites.front_default;
+        const r = await fetch(`https://pokeapi.co/api/v2/pokemon/${name}`);
+        const d = await r.json();
+        document.getElementById(`img-${slot}`).src = d.sprites.front_default;
         document.getElementById(`img-${slot}`).style.display = "block";
-        moveCache[slot] = data.moves;
+        moveCache[slot] = d.moves;
         updateMoves(slot);
-        save();
     }
 
     function updateMoves(slot) {
-        const moves = moveCache[slot];
-        if(!moves) return;
+        const moves = moveCache[slot]; if(!moves) return;
         const lvl = parseInt(document.getElementById(`p${slot}-lvl`).value) || 1;
-        // Filtra golpes por level-up em qualquer versão (incluindo futuros dados da API)
-        const available = moves.filter(m => m.version_group_details.some(d => d.move_learn_method.name === 'level-up' && d.level_learned_at <= lvl)).map(m => m.move.name);
-        const unique = [...new Set(available)].map(format).sort();
+        const avail = moves.filter(m => m.version_group_details.some(vd => vd.level_learned_at <= lvl)).map(m => m.move.name);
+        const unique = [...new Set(avail)].map(format).sort();
         for(let i=1; i<=4; i++) {
-            const sel = document.getElementById(`p${slot}-m${i}`);
-            const old = sel.value;
-            sel.innerHTML = '<option value="">Golpe</option>';
-            unique.forEach(m => sel.innerHTML += `<option value="${m}">${m}</option>`);
-            sel.value = old;
-        }
-    }
-
-    function save() {
-        document.querySelectorAll('.save').forEach(el => localStorage.setItem(el.id, el.value));
-        const s = document.getElementById('status');
-        s.classList.add('show'); setTimeout(() => s.classList.remove('show'), 2000);
-    }
-
-    function loadSaved() {
-        document.querySelectorAll('.save').forEach(el => {
-            const v = localStorage.getItem(el.id);
-            if(v) el.value = v;
-        });
-        updateCities();
-        const savedAvatar = localStorage.getItem('userAvatar');
-        if(savedAvatar) {
-            const img = document.getElementById('avatar-img');
-            img.src = savedAvatar; img.style.display = 'block';
-            document.getElementById('avatar-placeholder').style.display = 'none';
-        }
-        for(let i=1; i<=6; i++) {
-            const n = document.getElementById(`p${i}-name`).value;
-            if(n) fetchMovesSilently(i, n.toLowerCase().replace(/ /g, '-'));
+            const s = document.getElementById(`p${slot}-m${i}`);
+            const old = s.value;
+            s.innerHTML = '<option value="">Golpe</option>';
+            unique.forEach(m => s.innerHTML += `<option value="${m}">${m}</option>`);
+            s.value = old;
         }
     }
 
     async function fetchMovesSilently(slot, name) {
-        const r = await fetch(`https://pokeapi.co/api/v2/pokemon/${name}`);
-        if(r.ok) {
+        try {
+            const r = await fetch(`https://pokeapi.co/api/v2/pokemon/${name}`);
             const d = await r.json();
-            const img = document.getElementById(`img-${slot}`);
-            img.src = d.sprites.other['official-artwork'].front_default || d.sprites.front_default;
-            img.style.display = 'block';
+            document.getElementById(`img-${slot}`).src = d.sprites.front_default;
+            document.getElementById(`img-${slot}`).style.display = 'block';
             moveCache[slot] = d.moves;
             updateMoves(slot);
-        }
+        } catch(e) {}
     }
 
-    function exportData() {
-        const data = {};
-        document.querySelectorAll('.save').forEach(el => data[el.id] = el.value);
-        const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = 'ficha_rpg.json';
-        a.click();
-    }
-
-    document.addEventListener('change', (e) => { if(e.target.classList.contains('save')) save(); });
     init();
 </script>
 </body>
