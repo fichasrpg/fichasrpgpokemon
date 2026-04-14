@@ -3,266 +3,526 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PokéSheet Ultra - RPG</title>
+    <title>PokéSheet Premium - RPG</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        /* Variáveis de Tema Moderno (Dark Mode) */
         :root {
-            --poke-red: #ef5350;
-            --poke-blue: #2a75bb;
-            --poke-yellow: #ffcb05;
-            --dark: #333;
-            --panel: #f4f4f4;
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --primary: #ef4444; /* Vermelho Pokémon */
+            --primary-hover: #dc2626;
+            --secondary: #3b82f6; /* Azul Pokémon */
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: #334155;
+            --input-bg: #0f172a;
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.25);
+            --transition: all 0.3s ease;
         }
 
+        /* Reset e Base */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #222;
-            margin: 0;
-            padding: 10px;
-            color: var(--dark);
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            padding: 20px;
+            line-height: 1.5;
         }
 
-        .pokedex {
-            max-width: 1100px;
-            margin: auto;
-            background: var(--poke-red);
-            border-radius: 20px;
-            border: 6px solid var(--dark);
-            padding: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        /* Container Principal */
+        .dashboard {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
         }
 
-        /* Top Bar */
-        .trainer-bar {
-            background: white;
-            padding: 10px;
-            border-radius: 10px;
-            display: grid;
-            grid-template-columns: 2fr 1fr 1fr 1fr;
+        /* Cabeçalho do Treinador */
+        .trainer-header {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .trainer-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+        }
+
+        .header-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
             gap: 10px;
-            margin-bottom: 15px;
-            border: 3px solid var(--dark);
+        }
+
+        .header-title::after {
+            content: 'PRO';
+            background: var(--primary);
+            color: white;
+            font-size: 0.7rem;
+            padding: 2px 8px;
+            border-radius: 12px;
+            letter-spacing: 1px;
+        }
+
+        .trainer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        /* Inputs Modernos */
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .input-group label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        input, select, textarea {
+            background-color: var(--input-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 10px 12px;
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            transition: var(--transition);
+            width: 100%;
+            outline: none;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--secondary);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
         }
 
         /* Grid de Pokémon */
         .team-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 10px;
-            margin-bottom: 15px;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
         }
 
+        /* Cartão de Pokémon */
         .pkmn-card {
-            background: #fff;
-            border: 3px solid var(--dark);
-            border-radius: 12px;
-            padding: 8px;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            transition: var(--transition);
+        }
+
+        .pkmn-card:hover {
+            transform: translateY(-4px);
+            border-color: #475569;
+        }
+
+        .pkmn-header {
             display: grid;
-            grid-template-columns: 70px 1fr;
-            gap: 10px;
+            grid-template-columns: 80px 1fr;
+            gap: 16px;
+            align-items: start;
+        }
+
+        /* Sprite do Pokémon */
+        .sprite-wrapper {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
             position: relative;
+            overflow: hidden;
         }
 
-        .pkmn-left { text-align: center; }
-        
-        .sprite-box {
-            width: 64px; height: 64px;
-            background: #90ad98;
-            border: 2px solid var(--dark);
-            border-radius: 5px;
-            display: flex; align-items: center; justify-content: center;
+        .sprite-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: none;
+            filter: drop-shadow(0 4px 4px rgba(0,0,0,0.3));
+            animation: fadeIn 0.5s ease-in-out;
         }
-        
-        .sprite-box img { width: 60px; height: 60px; display: none; }
 
-        .search-box { position: relative; }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
+
+        /* Busca e Auto-complete */
+        .search-wrapper { position: relative; }
+        
         .dropdown {
-            position: absolute; width: 100%; max-height: 120px;
-            background: white; border: 1px solid #ccc;
-            overflow-y: auto; z-index: 100; display: none;
-            font-size: 0.8em;
+            position: absolute;
+            top: calc(100% + 4px);
+            left: 0;
+            width: 100%;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            max-height: 180px;
+            overflow-y: auto;
+            z-index: 10;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            display: none;
         }
-        .dropdown div { padding: 5px; cursor: pointer; border-bottom: 1px solid #eee; }
-        .dropdown div:hover { background: var(--poke-yellow); }
 
-        /* Inputs menores */
-        input, select, textarea {
-            width: 100%; border: 1px solid #ccc; border-radius: 4px;
-            font-size: 0.85em; padding: 4px; box-sizing: border-box;
+        .dropdown div {
+            padding: 10px 12px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-main);
+            transition: background 0.2s;
         }
 
+        .dropdown div:hover {
+            background: var(--border-color);
+            color: white;
+        }
+
+        /* Atributos do Pokémon */
+        .pkmn-stats {
+            display: grid;
+            grid-template-columns: 1fr 60px 1fr;
+            gap: 10px;
+        }
+
+        /* Movimentos */
         .moves-grid {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 4px;
-            margin-top: 5px; grid-column: span 2;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            background: rgba(15, 23, 42, 0.5);
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
         }
 
-        /* Footer */
-        .bottom-section {
-            display: grid; grid-template-columns: 1fr 300px; gap: 10px;
+        /* Rodapé / Notas */
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 20px;
         }
-        .notes-area { background: white; padding: 10px; border-radius: 10px; border: 3px solid var(--dark); }
+
+        .notes-section {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: var(--shadow);
+        }
+
+        .export-section {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 15px;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: var(--shadow);
+        }
 
         .btn-export {
-            width: 100%; padding: 10px; background: var(--poke-blue); color: white;
-            border: none; border-radius: 5px; font-weight: bold; cursor: pointer;
+            background: linear-gradient(135deg, var(--secondary), #2563eb);
+            color: white;
+            border: none;
+            padding: 14px 20px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
 
-        .loading-label { font-size: 0.7em; color: blue; display: none; }
+        .btn-export:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(59, 130, 246, 0.4);
+        }
+
+        .status-msg {
+            text-align: center;
+            font-size: 0.85rem;
+            color: #10b981; /* Verde esmeralda */
+            font-weight: 500;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .status-msg.show { opacity: 1; }
+
+        /* Responsividade */
+        @media (max-width: 768px) {
+            .footer-grid { grid-template-columns: 1fr; }
+            .pkmn-stats { grid-template-columns: 1fr 1fr; }
+            .pkmn-stats .input-group:last-child { grid-column: span 2; }
+        }
     </style>
 </head>
 <body>
 
-<div class="pokedex">
-    <div class="trainer-bar">
-        <input type="text" id="t-name" class="save" placeholder="Nome do Treinador">
-        <input type="text" id="t-class" class="save" placeholder="Classe">
-        <input type="text" id="t-region" class="save" placeholder="Região">
-        <input type="number" id="t-money" class="save" placeholder="Dinheiro">
+<div class="dashboard">
+    <div class="trainer-header">
+        <div class="header-title">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary)"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+            ID de Treinador
+        </div>
+        <div class="trainer-grid">
+            <div class="input-group">
+                <label>Nome do Treinador</label>
+                <input type="text" id="t-name" class="save" placeholder="Ex: Red">
+            </div>
+            <div class="input-group">
+                <label>Classe</label>
+                <input type="text" id="t-class" class="save" placeholder="Ex: Pokémon Ranger">
+            </div>
+            <div class="input-group">
+                <label>Região atual</label>
+                <input type="text" id="t-region" class="save" placeholder="Ex: Johto">
+            </div>
+            <div class="input-group">
+                <label>PokéDollars (₽)</label>
+                <input type="number" id="t-money" class="save" placeholder="0">
+            </div>
+        </div>
     </div>
 
     <div class="team-grid" id="team-container">
         </div>
 
-    <div class="bottom-section">
-        <div class="notes-area">
-            <label style="font-weight: bold; font-size: 0.8em;">INVENTÁRIO E NOTAS:</label>
-            <textarea id="notes" rows="4" class="save" placeholder="Itens, missões, etc..."></textarea>
+    <div class="footer-grid">
+        <div class="notes-section">
+            <div class="input-group">
+                <label>Inventário e Notas de Sessão</label>
+                <textarea id="notes" rows="6" class="save" placeholder="Anote seus itens, missões, Insígnias e anotações da campanha..."></textarea>
+            </div>
         </div>
-        <div style="display:flex; flex-direction:column; justify-content: space-between;">
-            <button class="btn-export" onclick="exportData()">BAIXAR FICHA (.JSON)</button>
-            <div id="status" style="color: white; font-size: 0.8em; text-align: center;">💾 Tudo pronto!</div>
+        
+        <div class="export-section">
+            <div style="text-align: center; margin-bottom: 10px;">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-muted)"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            </div>
+            <button class="btn-export" onclick="exportData()">Exportar Ficha</button>
+            <div id="status" class="status-msg">Alterações salvas localmente!</div>
         </div>
     </div>
 </div>
 
 <script>
+    // Configurações e Dados
     let allPkmn = [];
-    const moveCache = {}; // Cache para não baixar os mesmos golpes várias vezes
+    const moveCache = {};
+    const natures = ['Hardy', 'Lonely', 'Brave', 'Adamant', 'Naughty', 'Bold', 'Docile', 'Relaxed', 'Impish', 'Lax', 'Timid', 'Hasty', 'Serious', 'Jolly', 'Naive', 'Modest', 'Mild', 'Quiet', 'Bashful', 'Rash', 'Calm', 'Gentle', 'Sassy', 'Careful', 'Quirky'];
 
-    async function init() {
-        const resp = await fetch('https://pokeapi.co/api/v2/pokemon?limit=1025');
-        const data = await resp.json();
-        allPkmn = data.results;
-        renderSlots();
-        loadSaved();
+    // Utilitário para Capitalizar nomes (ex: bulbasaur -> Bulbasaur, fire-blast -> Fire Blast)
+    function formatName(str) {
+        if (!str) return '';
+        return str.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
     }
 
+    // Inicialização
+    async function init() {
+        renderSlots(); // Renderiza a interface primeiro
+        loadSaved();   // Carrega dados salvos
+        
+        try {
+            // Busca a lista de Pokémon em background
+            const resp = await fetch('https://pokeapi.co/api/v2/pokemon?limit=1025');
+            const data = await resp.json();
+            allPkmn = data.results;
+        } catch (e) {
+            console.error("Erro ao carregar banco de dados Pokedex", e);
+        }
+    }
+
+    // Renderiza os 6 cartões de Pokémon
     function renderSlots() {
         const container = document.getElementById('team-container');
+        let html = '';
+        
+        // Gerador de options para as Natures
+        const natureOptions = natures.map(n => `<option value="${n}">${n}</option>`).join('');
+
         for(let i=1; i<=6; i++) {
-            container.innerHTML += `
+            html += `
                 <div class="pkmn-card">
-                    <div class="pkmn-left">
-                        <div class="sprite-box"><img id="img-${i}"></div>
-                        <input type="number" id="p${i}-lvl" class="save" placeholder="Lvl" value="1" onchange="updateMoves(${i})">
-                    </div>
-                    <div class="pkmn-right">
-                        <div class="search-box">
-                            <input type="text" id="p${i}-name" class="save" placeholder="Buscar Pokémon..." oninput="handleSearch(${i})">
-                            <div id="drop-${i}" class="dropdown"></div>
+                    <div class="pkmn-header">
+                        <div class="sprite-wrapper">
+                            <img id="img-${i}" alt="Sprite">
                         </div>
-                        <input type="text" id="p${i}-nick" class="save" placeholder="Apelido" style="margin-top:4px">
-                        <span id="load-${i}" class="loading-label">Carregando golpes...</span>
+                        <div class="input-group search-wrapper">
+                            <label>Espécie do Pokémon</label>
+                            <input type="text" id="p${i}-name" class="save" placeholder="Pesquisar..." oninput="handleSearch(${i})" autocomplete="off">
+                            <div id="drop-${i}" class="dropdown"></div>
+                            
+                            <input type="text" id="p${i}-nick" class="save" placeholder="Apelido (Opcional)" style="margin-top: 8px;">
+                        </div>
                     </div>
-                    <div class="moves-grid">
-                        <select id="p${i}-m1" class="save move-select"><option value="">Golpe 1</option></select>
-                        <select id="p${i}-m2" class="save move-select"><option value="">Golpe 2</option></select>
-                        <select id="p${i}-m3" class="save move-select"><option value="">Golpe 3</option></select>
-                        <select id="p${i}-m4" class="save move-select"><option value="">Golpe 4</option></select>
+                    
+                    <div class="pkmn-stats">
+                        <div class="input-group">
+                            <label>Nature</label>
+                            <select id="p${i}-nature" class="save">
+                                <option value="">Definir...</option>
+                                ${natureOptions}
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label>Nível</label>
+                            <input type="number" id="p${i}-lvl" class="save" value="1" min="1" max="100" onchange="updateMoves(${i})">
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Movimentos (Baseados no Nível)</label>
+                        <div class="moves-grid">
+                            <select id="p${i}-m1" class="save"><option value="">Golpe 1</option></select>
+                            <select id="p${i}-m2" class="save"><option value="">Golpe 2</option></select>
+                            <select id="p${i}-m3" class="save"><option value="">Golpe 3</option></select>
+                            <select id="p${i}-m4" class="save"><option value="">Golpe 4</option></select>
+                        </div>
                     </div>
                 </div>
             `;
         }
+        container.innerHTML = html;
     }
 
+    // Lógica da Barra de Pesquisa
     function handleSearch(slot) {
         const input = document.getElementById(`p${slot}-name`);
         const drop = document.getElementById(`drop-${slot}`);
-        const query = input.value.toLowerCase();
-        drop.innerHTML = "";
-        if(query.length < 2) { drop.style.display="none"; return; }
+        const query = input.value.toLowerCase().trim();
         
-        const matches = allPkmn.filter(p => p.name.includes(query)).slice(0, 5);
-        if(matches.length) {
-            drop.style.display="block";
+        drop.innerHTML = "";
+        
+        if(query.length < 2 || allPkmn.length === 0) { 
+            drop.style.display = "none"; 
+            return; 
+        }
+        
+        const matches = allPkmn.filter(p => p.name.includes(query)).slice(0, 6);
+        
+        if(matches.length > 0) {
+            drop.style.display = "block";
             matches.forEach(p => {
                 const d = document.createElement('div');
-                d.innerText = p.name.toUpperCase();
+                d.innerText = formatName(p.name);
                 d.onclick = () => selectPkmn(slot, p.name);
                 drop.appendChild(d);
             });
+        } else {
+            drop.style.display = "none";
         }
     }
 
-    async function selectPkmn(slot, name) {
-        document.getElementById(`p${slot}-name`).value = name;
+    // Ação ao escolher um Pokémon na lista
+    async function selectPkmn(slot, nameRaw) {
+        const formattedName = formatName(nameRaw);
+        document.getElementById(`p${slot}-name`).value = formattedName;
         document.getElementById(`drop-${slot}`).style.display = "none";
         
-        // Sprite
-        const resp = await fetch(`https://pokeapi.co/api/v2/pokemon/${name}`);
-        const data = await resp.json();
-        const img = document.getElementById(`img-${slot}`);
-        img.src = data.sprites.front_default;
-        img.style.display = "block";
-        
-        // Guardar dados brutos do Pokémon para filtrar moves depois
-        moveCache[slot] = data.moves;
-        updateMoves(slot);
-        save();
+        // Buscar dados na API
+        try {
+            const resp = await fetch(`https://pokeapi.co/api/v2/pokemon/${nameRaw}`);
+            const data = await resp.json();
+            
+            // Atualiza a Imagem
+            const img = document.getElementById(`img-${slot}`);
+            img.src = data.sprites.other['official-artwork'].front_default || data.sprites.front_default;
+            img.style.display = "block";
+            
+            // Armazena os golpes na memória para o filtro de nível
+            moveCache[slot] = data.moves;
+            updateMoves(slot);
+            saveData();
+            
+        } catch (e) {
+            console.error("Erro ao buscar detalhes do Pokémon", e);
+        }
     }
 
+    // Filtra e atualiza a lista de golpes disponíveis
     function updateMoves(slot) {
         const movesData = moveCache[slot];
         if(!movesData) return;
         
-        const lvl = parseInt(document.getElementById(`p${slot}-lvl`).value) || 1;
+        const lvlInput = document.getElementById(`p${slot}-lvl`).value;
+        const lvl = parseInt(lvlInput) || 1;
         
-        // Filtra moves que aprende por level-up até o nível atual
-        const availableMoves = movesData.filter(m => {
+        // Filtra golpes que ele aprende subindo de nível até o nível atual
+        const availableMovesRaw = movesData.filter(m => {
             return m.version_group_details.some(d => 
                 d.move_learn_method.name === 'level-up' && d.level_learned_at <= lvl
             );
-        }).map(m => m.move.name).sort();
+        }).map(m => m.move.name);
 
-        // Atualiza os 4 selects de golpes
+        // Remove duplicatas e formata os nomes
+        const uniqueFormattedMoves = [...new Set(availableMovesRaw)]
+                                        .map(formatName)
+                                        .sort();
+
+        // Atualiza os 4 seletores
         for(let m=1; m<=4; m++) {
             const select = document.getElementById(`p${slot}-m${m}`);
             const currentVal = select.value;
-            select.innerHTML = '<option value="">-- Selecione --</option>';
-            [...new Set(availableMoves)].forEach(moveName => {
+            
+            select.innerHTML = '<option value="">Selecione...</option>';
+            
+            uniqueFormattedMoves.forEach(moveName => {
                 const opt = document.createElement('option');
                 opt.value = moveName;
-                opt.innerText = moveName.replace('-', ' ');
+                opt.innerText = moveName;
                 select.appendChild(opt);
             });
-            select.value = currentVal; // Tenta manter o golpe se ele ainda for válido
+            
+            // Restaura o golpe selecionado anteriormente (se ainda for válido)
+            if (uniqueFormattedMoves.includes(currentVal)) {
+                select.value = currentVal;
+            }
         }
+        saveData();
     }
 
-    // Salvamento
-    function save() {
-        document.querySelectorAll('.save').forEach(el => {
-            localStorage.setItem(el.id, el.value);
-        });
-        // Salva também o link da imagem atual
-        for(let i=1; i<=6; i++) {
-            const img = document.getElementById(`img-${i}`);
-            if(img.src) localStorage.setItem(`img-${i}`, img.src);
-        }
-    }
-
-    function loadSaved() {
-        document.querySelectorAll('.save').forEach(el => {
-            const v = localStorage.getItem(el.id);
-            if(v) el.value = v;
-        });
-        for(let i=1; i<=6; i++) {
-            const src = localStorage.getItem(`img-${i}`);
-            if(src) {
-                const img = document.getElementById(`img-${i}`);
-                img.src = src; img.style.display = "block";
-                // Tenta carregar os golpes novamente para o seletor funcionar
-                const name = document.getElementById(`p${i}-name`).value;
-                if(name) fetchMovesSilently(i, name);
+    // Sistema de Salvamento (LocalStorage)
+    function saveData() {
+        document.querySelectorAll('.save').forEach(el =>
+   if(name) fetchMovesSilently(i, name);
             }
         }
     }
