@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PokéSheet Cloud - Official Gimmicks</title>
+    <title>PokéSheet Cloud Ultra - Official Gimmicks</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -19,74 +19,132 @@
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
         body { background: radial-gradient(circle at top right, #111827, #05080f); color: var(--text); padding: 15px; min-height: 100vh; }
-        .container { max-width: 1100px; margin: auto; display: flex; flex-direction: column; gap: 20px; }
+        .container { max-width: 1100px; margin: auto; display: flex; flex-direction: column; gap: 25px; }
 
-        /* Estilo dos Cards */
-        .team-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px; }
-        .pkmn-card { background: var(--surface); backdrop-filter: blur(10px); border: 1px solid var(--border); border-radius: 22px; padding: 15px; }
+        .auth-bar { background: var(--surface); backdrop-filter: blur(15px); padding: 18px 25px; border-radius: 20px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.4); flex-wrap: wrap; gap: 15px; }
+        .logo { font-weight: 800; font-size: 1.3rem; letter-spacing: -1px; background: linear-gradient(to right, #ff3e3e, #f87171); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .auth-inputs { display: flex; gap: 8px; flex-wrap: wrap; width: 100%; justify-content: flex-end; }
+        .auth-inputs input { background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: white; padding: 10px; border-radius: 12px; flex: 1; min-width: 120px; }
 
-        .pkmn-header { display: flex; gap: 12px; align-items: center; margin-bottom: 12px; }
+        .section-tag { display: flex; align-items: center; gap: 10px; margin-bottom: -10px; }
+        .section-tag h2 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 2px; color: var(--text-dim); }
+        .line { height: 1px; flex: 1; background: var(--border); }
+
+        .panel { background: var(--surface); backdrop-filter: blur(10px); border: 1px solid var(--border); border-radius: 24px; padding: 20px; }
         
-        /* Frame do Pokemon Ampliado */
+        /* Layout de Identificação */
+        .trainer-header { display: flex; gap: 20px; flex-direction: column; align-items: center; }
+        .avatar-box { width: 140px; height: 140px; border-radius: 30px; background: #000; border: 2px dashed var(--border); cursor: pointer; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+        .avatar-box img { width: 100%; height: 100%; object-fit: cover; }
+        .form-grid { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .input-group { display: flex; flex-direction: column; gap: 5px; }
+        .full-width { grid-column: span 2; }
+        label { font-size: 0.6rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase; }
+        input, select, textarea { background: rgba(0,0,0,0.2); border: 1px solid var(--border); color: white; padding: 10px; border-radius: 12px; font-size: 0.85rem; width: 100%; }
+
+        /* Grid de Pokémons */
+        .team-grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
+        .pkmn-card { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 22px; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
+        .pkmn-header { display: flex; gap: 12px; align-items: center; }
+        
         .sprite-frame { 
             width: 90px; height: 90px; background: #000; border-radius: 18px; 
             display: flex; align-items: center; justify-content: center; border: 1px solid var(--border);
-            position: relative; overflow: visible; /* Permitir que o ícone da gimmick possa sobressair levemente se necessário */
+            position: relative; overflow: hidden;
         }
+        .sprite-frame img.pkmn-img { width: 100%; height: 100%; object-fit: contain; transform: scale(1.45); image-rendering: pixelated; }
         
-        .pkmn-img { 
-            width: 100%; height: 100%; object-fit: contain; 
-            image-rendering: pixelated; 
-            transform: scale(1.5); /* Pokémon bem maior */
-        }
-
-        /* Ícone da Gimmick Oficial */
+        /* Badge Gimmick Oficial */
         .gimmick-badge {
-            position: absolute; 
-            bottom: -5px; 
-            right: -5px; 
-            width: 32px; 
-            height: 32px;
-            background-size: contain; 
-            background-repeat: no-repeat; 
-            z-index: 10;
-            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8));
-            display: none;
+            position: absolute; bottom: 6px; right: 6px; width: 28px; height: 28px;
+            background-size: contain; background-repeat: no-repeat; background-position: center;
+            z-index: 10; filter: drop-shadow(0 0 2px black); pointer-events: none;
         }
 
-        .search-area { flex: 1; }
-        input, select, textarea {
-            background: rgba(0,0,0,0.3); border: 1px solid var(--border);
-            color: white; padding: 8px; border-radius: 10px; font-size: 0.85rem; width: 100%;
-        }
+        .search-area { position: relative; flex: 1; }
+        .results-box { position: absolute; top: 100%; left: 0; right: 0; background: #1e293b; border-radius: 10px; z-index: 100; max-height: 150px; overflow-y: auto; display: none; }
+        .results-box div { padding: 10px; cursor: pointer; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
 
-        label { font-size: 0.6rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase; margin-bottom: 4px; display: block; }
+        .btn { padding: 10px 15px; border-radius: 10px; border: none; font-weight: 700; cursor: pointer; text-transform: uppercase; font-size: 0.7rem; transition: 0.3s; }
+        .btn-green { background: var(--accent); color: #05080f; }
+        .btn-blue { background: var(--secondary); color: white; }
+        .btn-convert { background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: white; width: 100%; margin-top: 10px; padding: 15px; font-size: 0.9rem; }
 
-        .results-box {
-            position: absolute; background: #1e293b; border-radius: 8px; 
-            z-index: 100; max-height: 150px; overflow-y: auto; display: none; width: 200px;
+        @media (min-width: 768px) {
+            .trainer-header { flex-direction: row; }
+            .form-grid { grid-template-columns: repeat(4, 1fr); }
+            .team-grid { grid-template-columns: 1fr 1fr; }
         }
-        .results-box div { padding: 8px; cursor: pointer; border-bottom: 1px solid var(--border); font-size: 0.8rem; }
+        @media (min-width: 1024px) { .team-grid { grid-template-columns: repeat(3, 1fr); } }
     </style>
 </head>
 <body>
 
 <div class="container">
+    <div class="auth-bar">
+        <div class="logo">POKÉSHEET CLOUD</div>
+        <div class="auth-inputs">
+            <input type="text" id="user-id" placeholder="ID">
+            <input type="password" id="user-pass" placeholder="Senha">
+            <button class="btn btn-green" onclick="cloudAction('save')">Salvar</button>
+            <button class="btn btn-blue" onclick="cloudAction('load')">Entrar</button>
+        </div>
+    </div>
+
+    <div class="section-tag"><h2>Treinador</h2><div class="line"></div></div>
+    <div class="panel trainer-header">
+        <div onclick="document.getElementById('file-input').click()" class="avatar-box">
+            <img id="main-avatar" style="display:none"><span id="placeholder" style="font-size:0.6rem; color:var(--text-dim)">AVATAR</span>
+        </div>
+        <input type="file" id="file-input" hidden accept="image/*">
+        <div class="form-grid">
+            <div class="input-group full-width"><label>Nome</label><input type="text" id="t-name" class="save"></div>
+            <div class="input-group"><label>Região</label><select id="t-region" class="save" onchange="updateCities()"></select></div>
+            <div class="input-group full-width"><label>Cidade</label><select id="t-city" class="save"></select></div>
+            <div class="input-group"><label>₽ Dinheiro</label><input type="text" id="t-money" class="save" value="0"></div>
+        </div>
+    </div>
+
+    <div class="section-tag"><h2>Equipe</h2><div class="line"></div></div>
     <div id="team" class="team-grid"></div>
+
+    <div class="panel">
+        <button class="btn btn-convert" onclick="alert('Ficha Processada!')">✨ GERAR FICHA</button>
+    </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-    // URLs estáveis para os símbolos oficiais (Sprites da PokeSprite/Msikma)
-    const gimmickIcons = {
-        "Mega": "https://raw.githubusercontent.com/msikma/pokesprite/master/misc/battle-icon/mega.png",
-        "Z-Move": "https://raw.githubusercontent.com/msikma/pokesprite/master/misc/battle-icon/z-move.png",
-        "G-Max": "https://raw.githubusercontent.com/msikma/pokesprite/master/misc/battle-icon/gigantamax.png",
-        "Tera": "https://raw.githubusercontent.com/msikma/pokesprite/master/misc/battle-icon/terastal.png"
-    };
+    const SUPABASE_URL = 'https://pjggfdjixenopkiiugmj.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBqZ2dmZGppeGVub3BraWl1Z21qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMjIwMDcsImV4cCI6MjA5MTY5ODAwN30.QWr9d3qT2216to7VOEmc_hzu-g789FTLdYdDUtUosk0';
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     let allPkmn = [];
+    
+    // Ícones Oficiais (Sprites estáveis de alta fidelidade)
+    const gimmicks = {
+        "Mega": "https://play.pokemonshowdown.com/sprites/misc/mega.png",
+        "Z-Move": "https://play.pokemonshowdown.com/sprites/misc/zpower.png",
+        "G-Max": "https://play.pokemonshowdown.com/sprites/misc/gigantamax.png",
+        "Tera": "https://play.pokemonshowdown.com/sprites/misc/tera.png"
+    };
+
+    const worldData = {
+        "Kanto": ["Pallet Town", "Viridian City", "Pewter City", "Cerulean City", "Vermilion City", "Lavender Town", "Celadon City", "Fuchsia City", "Saffron City", "Cinnabar Island"],
+        "Johto": ["New Bark Town", "Cherrygrove City", "Violet City", "Azalea Town", "Goldenrod City", "Ecruteak City", "Olivine City", "Cianwood City", "Mahogany Town", "Blackthorn City"],
+        "Hoenn": ["Littleroot Town", "Oldale Town", "Petalburg City", "Rustboro City", "Dewford Town", "Slateport City", "Mauville City", "Verdanturf Town", "Fallarbor Town", "Lavaridge Town", "Fortree City", "Lilycove City", "Mossdeep City", "Sootopolis City"],
+        "Sinnoh": ["Twinleaf Town", "Sandgem Town", "Jubilife City", "Oreburgh City", "Floaroma Town", "Eterna City", "Hearthome City", "Solaceon Town", "Veilstone City", "Pastoria City", "Celestic Town", "Canalave City", "Snowpoint City", "Sunyshore City"],
+        "Unova": ["Nuvema Town", "Accumula Town", "Striaton City", "Nacrene City", "Castelia City", "Nimbasa City", "Driftveil City", "Mistralton City", "Icirrus City", "Opelucid City", "Humilau City"],
+        "Kalos": ["Vaniville Town", "Santalune City", "Lumiose City", "Camphrier Town", "Cyllage City", "Ambrette Town", "Shalour City", "Coumarine City", "Laverre City", "Dendemille Town", "Anistar City", "Snowbelle City"],
+        "Alola": ["Hau'oli City", "Heahea City", "Konikoni City", "Malie City", "Tapu Village", "Seafolk Village"],
+        "Galar": ["Postwick", "Wedgehurst", "Motostoke", "Turffield", "Hulbury", "Hammerlocke", "Stow-on-Side", "Ballonlea", "Circhester", "Spikemuth", "Wyndon"],
+        "Paldea": ["Cabo Poco", "Mesagoza", "Cortondo", "Artazon", "Levincia", "Cascarrafa", "Porto Marinada", "Medali", "Montenevera", "Alfornada", "Glaseado"]
+    };
 
     async function init() {
+        const regSelect = document.getElementById('t-region');
+        regSelect.innerHTML = '<option value="">Região...</option>';
+        Object.keys(worldData).forEach(r => regSelect.innerHTML += `<option value="${r}">${r}</option>`);
         renderSlots();
         const r = await fetch('https://pokeapi.co/api/v2/pokemon?limit=1025');
         const d = await r.json();
@@ -94,7 +152,7 @@
     }
 
     function renderSlots() {
-        const team = document.getElementById('team');
+        const team = document.getElementById('team'); team.innerHTML = "";
         for(let i=1; i<=6; i++) {
             team.innerHTML += `
             <div class="pkmn-card">
@@ -103,35 +161,41 @@
                         <img id="img-${i}" class="pkmn-img" style="display:none">
                         <div id="gim-badge-${i}" class="gimmick-badge"></div>
                     </div>
-                    <div class="search-area" style="position:relative">
+                    <div class="search-area">
                         <label>Pokémon #${i}</label>
-                        <input type="text" id="p${i}-name" oninput="doSearch(${i})" placeholder="Nome do Pokémon...">
+                        <input type="text" id="p${i}-name" class="save" oninput="doSearch(${i})" placeholder="Espécie...">
                         <div id="drop-${i}" class="results-box"></div>
                     </div>
                 </div>
-                <div style="display:grid; grid-template-columns: 1fr 85px; gap:8px">
-                    <select id="p${i}-nature"><option value="">Nature</option></select>
-                    <select id="p${i}-gim" onchange="updateGimmick(${i})">
-                        <option value="">Gimmick</option>
-                        <option value="Mega">Mega</option>
-                        <option value="Z-Move">Z-Move</option>
-                        <option value="G-Max">G-Max</option>
-                        <option value="Tera">Tera</option>
+                <div style="display:grid; grid-template-columns: 60px 1fr; gap:8px">
+                    <input type="number" id="p${i}-lvl" class="save" value="1" min="1" max="100">
+                    <select id="p${i}-gim" class="save" onchange="updateGimmickIcon(${i})">
+                        <option value="">Sem Gimmick</option>
+                        <option value="Mega">Mega Evolução</option>
+                        <option value="Z-Move">Z-Power</option>
+                        <option value="G-Max">Gigantamax</option>
+                        <option value="Tera">Terastal</option>
                     </select>
                 </div>
             </div>`;
         }
     }
 
-    function updateGimmick(slot) {
+    function updateGimmickIcon(slot) {
         const val = document.getElementById(`p${slot}-gim`).value;
         const badge = document.getElementById(`gim-badge-${slot}`);
-        if(val && gimmickIcons[val]) {
-            badge.style.backgroundImage = `url('${gimmickIcons[val]}')`;
-            badge.style.display = 'block';
+        if(val && gimmicks[val]) {
+            badge.style.backgroundImage = `url('${gimmicks[val]}')`;
         } else {
-            badge.style.display = 'none';
+            badge.style.backgroundImage = 'none';
         }
+    }
+
+    function updateCities() {
+        const r = document.getElementById('t-region').value;
+        const s = document.getElementById('t-city');
+        s.innerHTML = '<option value="">Cidade...</option>';
+        if(worldData[r]) worldData[r].forEach(c => s.innerHTML += `<option value="${c}">${c}</option>`);
     }
 
     function doSearch(slot) {
@@ -142,8 +206,7 @@
         if(hits.length) {
             drop.style.display="block";
             hits.forEach(p => {
-                const d = document.createElement('div');
-                d.innerText = p.name.charAt(0).toUpperCase() + p.name.slice(1);
+                const d = document.createElement('div'); d.innerText = p.name.toUpperCase();
                 d.onclick = () => selectPkmn(slot, p.name);
                 drop.appendChild(d);
             });
@@ -151,7 +214,7 @@
     }
 
     async function selectPkmn(slot, name) {
-        document.getElementById(`p${slot}-name`).value = name.charAt(0).toUpperCase() + name.slice(1);
+        document.getElementById(`p${slot}-name`).value = name.toUpperCase();
         document.getElementById(`drop-${slot}`).style.display = "none";
         const r = await fetch(`https://pokeapi.co/api/v2/pokemon/${name}`);
         const d = await r.json();
