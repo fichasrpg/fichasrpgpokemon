@@ -289,6 +289,33 @@
 </script>
 
 </body>
+</html>   if(name) fetchMovesSilently(i, name);
+            }
+        }
+    }
+
+    async function fetchMovesSilently(slot, name) {
+        const resp = await fetch(`https://pokeapi.co/api/v2/pokemon/${name}`);
+        const data = await resp.json();
+        moveCache[slot] = data.moves;
+        updateMoves(slot);
+    }
+
+    function exportData() {
+        const data = {};
+        document.querySelectorAll('.save').forEach(el => data[el.id] = el.value);
+        const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'ficha_pokemon.json';
+        a.click();
+    }
+
+    document.addEventListener('input', save);
+    init();
+</script>
+
+</body>
 </html>            height: 40px;
             background: #00f2ff;
             border: 4px solid white;
