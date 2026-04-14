@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PokéSheet Cloud Ultra - Forms Edition</title>
+    <title>PokéSheet Cloud Ultra - Advanced Edition</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
     <style>
@@ -20,12 +20,23 @@
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
         body { background: radial-gradient(circle at top right, #111827, #05080f); color: var(--text); padding: 15px; min-height: 100vh; }
-        .container { max-width: 1100px; margin: auto; display: flex; flex-direction: column; gap: 25px; }
+        .container { max-width: 1100px; margin: auto; display: flex; flex-direction: column; gap: 20px; }
 
+        /* Auth Bar & Password Toggle */
         .auth-bar { background: var(--surface); backdrop-filter: blur(15px); padding: 18px 25px; border-radius: 20px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.4); flex-wrap: wrap; gap: 15px; }
         .logo { font-weight: 800; font-size: 1.3rem; letter-spacing: -1px; background: linear-gradient(to right, #ff3e3e, #f87171); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .auth-inputs { display: flex; gap: 8px; flex-wrap: wrap; width: 100%; justify-content: flex-end; }
-        .auth-inputs input { background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: white; padding: 10px; border-radius: 12px; flex: 1; min-width: 120px; }
+        .auth-inputs { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+        .pass-container { position: relative; display: flex; align-items: center; }
+        .pass-container input { padding-right: 35px; }
+        .toggle-pass { position: absolute; right: 10px; cursor: pointer; opacity: 0.6; font-size: 0.8rem; }
+
+        /* Tabs Navigation */
+        .tabs-nav { display: flex; gap: 10px; margin-bottom: -10px; }
+        .tab-btn { background: var(--surface); border: 1px solid var(--border); color: var(--text-dim); padding: 12px 25px; border-radius: 15px 15px 0 0; cursor: pointer; font-weight: 700; transition: 0.3s; }
+        .tab-btn.active { background: var(--secondary); color: white; border-bottom: none; }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: flex; flex-direction: column; gap: 25px; }
 
         .section-tag { display: flex; align-items: center; gap: 10px; margin-bottom: -10px; }
         .section-tag h2 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 2px; color: var(--text-dim); }
@@ -43,6 +54,13 @@
         label { font-size: 0.6rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase; }
 
         input, select, textarea { background: rgba(0,0,0,0.2); border: 1px solid var(--border); color: white; padding: 10px; border-radius: 12px; font-size: 0.85rem; width: 100%; }
+
+        /* Status System */
+        .stats-container { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 15px; }
+        .stat-row { display: grid; grid-template-columns: 80px 1fr 1fr 1fr; gap: 10px; align-items: center; background: rgba(255,255,255,0.03); padding: 8px; border-radius: 10px; }
+        .stat-label { font-size: 0.7rem; font-weight: 800; color: var(--text-dim); }
+        .stat-val { font-weight: 700; color: var(--accent); text-align: center; }
+        .points-badge { background: var(--secondary); padding: 5px 10px; border-radius: 8px; font-size: 0.7rem; margin-bottom: 10px; display: inline-block; }
 
         .team-grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
         .pkmn-card { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 22px; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
@@ -69,6 +87,7 @@
             .trainer-header { flex-direction: row; align-items: flex-start; }
             .form-grid { grid-template-columns: repeat(4, 1fr); }
             .team-grid { grid-template-columns: 1fr 1fr; }
+            .stats-container { grid-template-columns: 1fr; }
         }
         @media (min-width: 1024px) { .team-grid { grid-template-columns: repeat(3, 1fr); } }
 
@@ -82,47 +101,55 @@
         <div class="logo">POKÉSHEET CLOUD</div>
         <div class="auth-inputs">
             <input type="text" id="user-id" placeholder="ID">
-            <input type="password" id="user-pass" placeholder="Senha">
+            <div class="pass-container">
+                <input type="password" id="user-pass" placeholder="Senha">
+                <span class="toggle-pass" onclick="togglePassword()">👁️</span>
+            </div>
             <button class="btn btn-green" onclick="cloudAction('save')">Salvar</button>
             <button class="btn btn-blue" onclick="cloudAction('load')">Entrar</button>
         </div>
     </div>
 
-    <div class="section-tag"><h2>Identificação</h2><div class="line"></div></div>
+    <div class="tabs-nav">
+        <button class="tab-btn active" onclick="openTab('tab-trainer', this)">TREINADOR</button>
+        <button class="tab-btn" onclick="openTab('tab-pokemon', this)">TIME POKÉMON</button>
+    </div>
 
-    <div class="panel trainer-header">
-        <div class="avatar-wrapper">
-            <div onclick="document.getElementById('file-input').click()" class="avatar-box">
-                <img id="main-avatar" style="display:none">
-                <span id="placeholder" style="font-size:0.6rem; color:var(--text-dim)">FOTO / AVATAR</span>
+    <div id="tab-trainer" class="tab-content active">
+        <div class="section-tag"><h2>Identificação</h2><div class="line"></div></div>
+        <div class="panel trainer-header">
+            <div class="avatar-wrapper">
+                <div onclick="document.getElementById('file-input').click()" class="avatar-box">
+                    <img id="main-avatar" style="display:none">
+                    <span id="placeholder" style="font-size:0.6rem; color:var(--text-dim)">FOTO / AVATAR</span>
+                </div>
+                <input type="file" id="file-input" hidden accept="image/*">
             </div>
-            <input type="file" id="file-input" hidden accept="image/*">
+            <div class="form-grid">
+                <div class="input-group full-width"><label>Nome</label><input type="text" id="t-name" class="save"></div>
+                <div class="input-group"><label>Sexo</label><select id="t-sex" class="save"><option value="">-</option><option value="Masculino">Masculino</option><option value="Feminino">Feminino</option><option value="Outro">Outro</option></select></div>
+                <div class="input-group"><label>Idade</label><input type="number" id="t-age" class="save" min="10"></div>
+                <div class="input-group"><label>Altura</label><input type="text" id="t-height" class="save" placeholder="Ex: 1.75m"></div>
+                <div class="input-group"><label>Classe</label><select id="t-class" class="save"><option value="Treinador">Treinador</option><option value="Coordenador">Coordenador</option><option value="Criador">Criador</option><option value="Pesquisador">Pesquisador</option><option value="Ranger">Ranger</option><option value="Rocket">Equipe Rocket</option></select></div>
+                <div class="input-group"><label>Região</label><select id="t-region" class="save" onchange="updateCities()"></select></div>
+                <div class="input-group full-width"><label>Cidade</label><select id="t-city" class="save"></select></div>
+                <div class="input-group full-width"><label>Aparência</label><input type="text" id="t-appearance" class="save"></div>
+            </div>
         </div>
 
-        <div class="form-grid">
-            <div class="input-group full-width"><label>Nome</label><input type="text" id="t-name" class="save"></div>
-            <div class="input-group"><label>Sexo</label><select id="t-sex" class="save"><option value="">-</option><option value="Masculino">Masculino</option><option value="Feminino">Feminino</option><option value="Outro">Outro</option></select></div>
-            <div class="input-group"><label>Idade</label><input type="number" id="t-age" class="save" min="10"></div>
-            <div class="input-group"><label>Altura</label><input type="text" id="t-height" class="save" placeholder="Ex: 1.75m"></div>
-            <div class="input-group"><label>Classe</label><select id="t-class" class="save"><option value="Treinador">Treinador</option><option value="Coordenador">Coordenador</option><option value="Criador">Criador</option><option value="Pesquisador">Pesquisador</option><option value="Ranger">Ranger</option><option value="Rocket">Equipe Rocket</option></select></div>
-            <div class="input-group"><label>Região</label><select id="t-region" class="save" onchange="updateCities()"></select></div>
-            <div class="input-group full-width"><label>Cidade</label><select id="t-city" class="save"></select></div>
-            <div class="input-group full-width"><label>Aparência</label><input type="text" id="t-appearance" class="save"></div>
+        <div class="section-tag"><h2>Inventário</h2><div class="line"></div></div>
+        <div class="panel">
+            <div class="input-group"><label>Itens no Inventário</label><textarea id="t-bag" class="save" rows="4"></textarea></div>
+            <div style="margin-top:10px"><label style="color:var(--accent)"> ₽ DINHEIRO</label><br><input type="text" id="t-money" class="save" value="0"></div>
         </div>
-    </div>
-
-    <div class="section-tag"><h2>Time Pokémon</h2><div class="line"></div></div>
-    <div id="team" class="team-grid"></div>
-
-    <div class="section-tag"><h2>Inventário</h2><div class="line"></div></div>
-    <div class="panel inv-layout">
-        <div class="input-group"><label>Itens no Inventário</label><textarea id="t-bag" class="save" rows="4" placeholder="Itens..."></textarea></div>
-        <div class="money-box"><label style="color:var(--accent)"> ₽ DINHEIRO</label><br><input type="text" id="t-money" class="save" value="0"></div>
-    </div>
-
-    <div class="panel">
+        
         <button class="btn btn-convert" onclick="convertSheet()">✨ GERAR FICHA EM TEXTO</button>
         <div id="convert-result"></div>
+    </div>
+
+    <div id="tab-pokemon" class="tab-content">
+        <div class="section-tag"><h2>Gestão de Equipe</h2><div class="line"></div></div>
+        <div id="team" class="team-grid"></div>
     </div>
 </div>
 
@@ -146,8 +173,17 @@
     let moveCache = {};
     let cropper;
 
-    const natures = ['Adamant', 'Bashful', 'Bold', 'Brave', 'Calm', 'Careful', 'Docile', 'Gentle', 'Hardy', 'Hasty', 'Impish', 'Jolly', 'Lonely', 'Mild', 'Modest', 'Naive', 'Naughty', 'Quiet', 'Quirky', 'Rash', 'Relaxed', 'Sassy', 'Serious', 'Timid'];
-    
+    const natures = {
+        'Adamant': {plus: 'atk', minus: 'spa'}, 'Bold': {plus: 'def', minus: 'atk'}, 'Brave': {plus: 'atk', minus: 'spe'},
+        'Calm': {plus: 'spd', minus: 'atk'}, 'Careful': {plus: 'spd', minus: 'spa'}, 'Gentle': {plus: 'spd', minus: 'def'},
+        'Hasty': {plus: 'spe', minus: 'def'}, 'Impish': {plus: 'def', minus: 'spa'}, 'Jolly': {plus: 'spe', minus: 'spa'},
+        'Lonely': {plus: 'atk', minus: 'def'}, 'Mild': {plus: 'spa', minus: 'def'}, 'Modest': {plus: 'spa', minus: 'atk'},
+        'Naive': {plus: 'spe', minus: 'spd'}, 'Naughty': {plus: 'atk', minus: 'spd'}, 'Quiet': {plus: 'spa', minus: 'spe'},
+        'Rash': {plus: 'spa', minus: 'spd'}, 'Relaxed': {plus: 'def', minus: 'spe'}, 'Sassy': {plus: 'spd', minus: 'spe'},
+        'Timid': {plus: 'spe', minus: 'atk'}, 'Hardy': {plus: null, minus: null}, 'Docile': {plus: null, minus: null},
+        'Serious': {plus: null, minus: null}, 'Bashful': {plus: null, minus: null}, 'Quirky': {plus: null, minus: null}
+    };
+
     const gimmicks = {
         "Mega": "https://i.ibb.co/3510nxGs/key-stone-by-jormxdos-dfftdg1-414w.png",
         "Z-Move": "https://i.ibb.co/0RCRx7VG/z-ring-icon-by-jormxdos-dffutkv-fullview.png",
@@ -169,13 +205,24 @@
 
     function format(str) { return str.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '); }
 
+    function togglePassword() {
+        const pass = document.getElementById('user-pass');
+        pass.type = pass.type === 'password' ? 'text' : 'password';
+    }
+
+    function openTab(id, btn) {
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        btn.classList.add('active');
+    }
+
     async function init() {
         const regSelect = document.getElementById('t-region');
         regSelect.innerHTML = '<option value="">Região...</option>';
         Object.keys(worldData).forEach(r => regSelect.innerHTML += `<option value="${r}">${r}</option>`);
         renderSlots();
         try {
-            // Aumento do limite para pegar formas extras (Megas, Totems, etc)
             const r = await fetch('https://pokeapi.co/api/v2/pokemon?limit=10000');
             const d = await r.json();
             allPkmn = d.results;
@@ -199,8 +246,8 @@
                     </div>
                 </div>
                 <div style="display:grid; grid-template-columns: 1fr 60px 85px; gap:8px">
-                    <select id="p${i}-nature" class="save"><option value="">Nature</option>${natures.map(n=>`<option value="${n}">${n}</option>`).join('')}</select>
-                    <input type="number" id="p${i}-lvl" class="save" value="1" min="1" max="100" onchange="updateMoves(${i})">
+                    <select id="p${i}-nature" class="save" onchange="calcStats(${i})"><option value="">Nature</option>${Object.keys(natures).map(n=>`<option value="${n}">${n}</option>`).join('')}</select>
+                    <input type="number" id="p${i}-lvl" class="save" value="1" min="1" max="100" onchange="calcStats(${i}); updateMoves(${i});">
                     <select id="p${i}-gim" class="save" onchange="updateGimmickIcon(${i})">
                         <option value="">Gimmick</option>
                         <option value="Mega">Mega</option>
@@ -209,12 +256,60 @@
                         <option value="Tera">Tera</option>
                     </select>
                 </div>
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px">
+                
+                <div class="stats-container">
+                    <div class="points-badge">Pontos Disponíveis: <span id="p${i}-pts">0</span></div>
+                    ${['hp', 'atk', 'def', 'spa', 'spd', 'spe'].map(s => `
+                        <div class="stat-row">
+                            <span class="stat-label">${s.toUpperCase()}</span>
+                            <input type="number" id="p${i}-base-${s}" class="save" placeholder="Base" onchange="calcStats(${i})">
+                            <input type="number" id="p${i}-up-${s}" class="save" placeholder="Add" onchange="calcStats(${i})">
+                            <span id="p${i}-total-${s}" class="stat-val">0</span>
+                        </div>
+                    `).join('')}
+                </div>
+
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-top:10px">
                     <select id="p${i}-m1" class="save"></select><select id="p${i}-m2" class="save"></select>
                     <select id="p${i}-m3" class="save"></select><select id="p${i}-m4" class="save"></select>
                 </div>
             </div>`;
         }
+    }
+
+    function calcStats(slot) {
+        const lvl = parseInt(document.getElementById(`p${slot}-lvl`).value) || 1;
+        const natureVal = document.getElementById(`p${slot}-nature`).value;
+        const nature = natures[natureVal] || {plus: null, minus: null};
+        
+        const totalPoints = (lvl - 1) * 5;
+        let usedPoints = 0;
+        const stats = ['hp', 'atk', 'def', 'spa', 'spd', 'spe'];
+        
+        stats.forEach(s => {
+            const base = parseInt(document.getElementById(`p${slot}-base-${s}`).value) || 0;
+            const up = parseInt(document.getElementById(`p${slot}-up-${s}`).value) || 0;
+            usedPoints += up;
+
+            let multiplier = 1.0;
+            if(nature.plus === s) multiplier += 0.10;
+            if(nature.minus === s) multiplier -= 0.10;
+
+            // Bônus de 1% a cada 10 pontos investidos
+            const bonusExtra = Math.floor(up / 10) * 0.01;
+            multiplier += bonusExtra;
+
+            const total = Math.floor((base + up) * multiplier);
+            const display = document.getElementById(`p${slot}-total-${s}`);
+            display.innerText = total;
+            
+            // Visual feedback para buffs/debuffs
+            display.style.color = multiplier > 1 ? '#10b981' : (multiplier < 1 ? '#ff3e3e' : '#f1f5f9');
+        });
+
+        const ptsSpan = document.getElementById(`p${slot}-pts`);
+        ptsSpan.innerText = totalPoints - usedPoints;
+        ptsSpan.style.color = (totalPoints - usedPoints) < 0 ? '#ff3e3e' : '#10b981';
     }
 
     function updateGimmickIcon(slot) {
@@ -242,10 +337,7 @@
         const q = document.getElementById(`p${slot}-name`).value.toLowerCase().replace(/ /g, '-');
         const drop = document.getElementById(`drop-${slot}`); drop.innerHTML = "";
         if(q.length < 2) return drop.style.display="none";
-        
-        // Filtro aprimorado para encontrar formas específicas
         const hits = allPkmn.filter(p => p.name.includes(q)).slice(0, 10);
-        
         if(hits.length) {
             drop.style.display="block";
             hits.forEach(p => {
@@ -263,10 +355,18 @@
             const r = await fetch(`https://pokeapi.co/api/v2/pokemon/${name}`);
             const d = await r.json();
             const img = document.getElementById(`img-${slot}`);
-            
-            // Prioridade para arte oficial, depois sprite comum (formas alternativas costumam ter sprite, mas não arte oficial na API principal)
             img.src = d.sprites.other['official-artwork'].front_default || d.sprites.front_default; 
             img.style.display = "block";
+            
+            // Auto-preencher status base da API se campos estiverem vazios
+            if(!restoreData) {
+                d.stats.forEach((s, idx) => {
+                    const map = ['hp', 'atk', 'def', 'spa', 'spd', 'spe'];
+                    document.getElementById(`p${slot}-base-${map[idx]}`).value = s.base_stat;
+                });
+                calcStats(slot);
+            }
+
             moveCache[slot] = d.moves;
             updateMoves(slot, restoreData);
         } catch(e) {}
@@ -295,8 +395,7 @@
         for(let i=1; i<=6; i++) {
             const pName = document.getElementById(`p${i}-name`).value;
             const pLvl = document.getElementById(`p${i}-lvl`).value;
-            const pGim = document.getElementById(`p${i}-gim`).value;
-            pkmnText += `╰┈➤ ${pName ? `${pName} (Lv. ${pLvl})${pGim ? ` [${pGim}]` : ""}` : "Vazio"}\n`;
+            pkmnText += `╰┈➤ ${pName ? `${pName} (Lv. ${pLvl})` : "Vazio"}\n`;
         }
         const template = `‎‧₊˚✧Ficha do Treinador✧˚₊‧‎\n- Nome: ${d('t-name')}\n- Sexo: ${d('t-sex')}\n- Idade: ${d('t-age')}\n- Altura: ${d('t-height')}\n- Dinheiro: ₽ ${d('t-money')}\n\n━━━━❰BOLSA❱━━━━\n${bagText}\n━━━━▣━━◤POKÉMONS◢━━▣━━━━━\n${pkmnText}`;
         const res = document.getElementById('convert-result');
@@ -322,6 +421,7 @@
                 for(let i=1; i<=6; i++) { 
                     if(data.data[`p${i}-name`]) selectPkmn(i, data.data[`p${i}-name`].toLowerCase().replace(/ /g, '-'), data.data);
                     updateGimmickIcon(i);
+                    calcStats(i);
                 }
                 alert("Carregado!");
             } else alert("Acesso negado.");
