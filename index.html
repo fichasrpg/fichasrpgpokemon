@@ -265,5 +265,82 @@
                 if(data.avatar) { 
                     const img = document.getElementById('main-avatar');
                     img.src = data.avatar; 
-                    img.style.
-                        
+                    img.style.display='block'; 
+                    document.getElementById('placeholder').style.display='none'; 
+                }
+
+                updateCities();
+                document.getElementById('t-city').value = data.data['t-city'];
+
+                for(let i=1; i<=6; i++) {
+                    const pkName = data.data[`p${i}-name`];
+                    if(pkName) {
+                        const slug = pkName.toLowerCase().replace(/ /g, '-');
+                        selectPkmn(i, slug, data.data);
+                    }
+                }
+                alert("Carregado!");
+            } else {
+                alert("Usuário não encontrado ou senha incorreta.");
+            }
+        }
+    }
+
+    function updateCities() {
+        const r = document.getElementById('t-region').value;
+        const s = document.getElementById('t-city');
+        const currentVal = s.value;
+        s.innerHTML = '<option value="">Cidade...</option>';
+        if(worldData[r]) worldData[r].forEach(c => s.innerHTML += `<option value="${c}">${c}</option>`);
+        if(currentVal) s.value = currentVal;
+    }
+
+    // --- LÓGICA DE FOTO ATUALIZADA (MODO MOVER IMAGEM) ---
+    document.getElementById('file-input').addEventListener('change', function(e) {
+        if(!e.target.files.length) return;
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const img = document.getElementById('image-to-crop');
+            img.src = event.target.result;
+            document.getElementById('crop-modal').style.display = 'flex';
+            
+            if(cropper) cropper.destroy();
+            
+            // Nova configuração: Travada e focada em mover/zoom da imagem
+            cropper = new Cropper(img, { 
+                aspectRatio: 1,      // Mantém quadrado/círculo perfeito
+                viewMode: 1,         // Restringe a imagem a nunca ficar menor que o container
+                dragMode: 'move',    // Padrão é mover a imagem, não criar nova seleção
+                autoCropArea: 1,     // Ocupa a área máxima permitida
+                restore: false,
+                guides: false,       // Remove linhas de guia
+                center: true,        // Mostra o centro
+                highlight: false,    // Remove o destaque branco sobre a área
+                cropBoxMovable: false, // TRAVA a caixa de corte, ela não se move
+                cropBoxResizable: false, // TRAVA o tamanho, usuário não muda
+                toggleDragModeOnDblclick: false, // Impede mudar modo sem querer
+            });
+        };
+        reader.readAsDataURL(e.target.files[0]);
+    });
+
+    function finishCrop() {
+        // Gera o canvas final em alta qualidade (500x500 é bom para avatar)
+        const canvas = cropper.getCroppedCanvas({ width: 500, height: 500 });
+        
+        const mainImg = document.getElementById('main-avatar');
+        mainImg.src = canvas.toDataURL(); // Converte para Base64 para salvar no banco
+        mainImg.style.display = 'block';
+        
+        document.getElementById('placeholder').style.display = 'none';
+        document.getElementById('crop-modal').style.display = 'none';
+        
+        // Reseta o input de arquivo para permitir subir a mesma imagem novamente se quiser
+        document.getElementById('file-input').value = '';
+    }
+
+    // Inicializar o sistema
+    init();
+</script>
+</body>
+</html>
