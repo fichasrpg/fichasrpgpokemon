@@ -21,37 +21,36 @@
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
-        body { background: radial-gradient(circle at top right, #111827, #05080f); color: var(--text); padding: 15px; min-height: 100vh; }
+        body { background: radial-gradient(circle at top right, #111827, #05080f); color: var(--text); padding: 15px; min-height: 100vh; overflow-x: hidden; }
         .container { max-width: 1100px; margin: auto; display: flex; flex-direction: column; gap: 20px; }
+
+        /* NOTIFICAÇÃO CUSTOMIZADA */
+        #notification-host { position: fixed; top: 20px; right: 20px; z-index: 10000; display: flex; flex-direction: column; gap: 10px; }
+        .toast { 
+            background: var(--surface); backdrop-filter: blur(15px); border: 1px solid var(--border); 
+            color: white; padding: 15px 25px; border-radius: 15px; font-weight: 600; font-size: 0.9rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); display: flex; align-items: center; gap: 12px;
+            animation: slideIn 0.3s ease-out forwards; border-left: 4px solid var(--secondary);
+        }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        .toast.success { border-left-color: var(--accent); }
+        .toast.error { border-left-color: var(--primary); }
 
         .auth-bar { background: var(--surface); backdrop-filter: blur(15px); padding: 18px 25px; border-radius: 20px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.4); flex-wrap: wrap; gap: 15px; }
         
         .logo-container { position: relative; display: inline-block; padding-right: 40px; }
         .logo { 
-            font-family: 'Unbounded', cursive; 
-            font-weight: 900; 
-            font-size: 1.4rem; 
-            letter-spacing: -1px; 
-            color: #ffcb05;
+            font-family: 'Unbounded', cursive; font-weight: 900; font-size: 1.4rem; letter-spacing: -1px; color: #ffcb05;
             text-shadow: 3px 3px 0px #3b4cca, -1px -1px 0px #3b4cca, 1px -1px 0px #3b4cca, -1px 1px 0px #3b4cca, 1px 1px 0px #3b4cca;
             text-transform: uppercase;
         }
         .pikachu-climb {
-            position: absolute;
-            right: -5px;
-            top: -15px;
-            width: 50px;
-            height: 50px;
+            position: absolute; right: -5px; top: -15px; width: 50px; height: 50px;
             background: url('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/25.gif') no-repeat center;
-            background-size: contain;
-            animation: hang 3s ease-in-out infinite;
-            pointer-events: none;
+            background-size: contain; animation: hang 3s ease-in-out infinite; pointer-events: none;
         }
 
-        @keyframes hang {
-            0%, 100% { transform: translateY(0) rotate(5deg); }
-            50% { transform: translateY(5px) rotate(-5deg); }
-        }
+        @keyframes hang { 0%, 100% { transform: translateY(0) rotate(5deg); } 50% { transform: translateY(5px) rotate(-5deg); } }
 
         .auth-inputs { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
         .pass-container { position: relative; display: flex; align-items: center; }
@@ -70,10 +69,18 @@
         .line { height: 1px; flex: 1; background: var(--border); }
 
         .panel { background: var(--surface); backdrop-filter: blur(10px); border: 1px solid var(--border); border-radius: 24px; padding: 20px; }
-        .trainer-header { display: flex; gap: 20px; flex-direction: column; align-items: center; }
+        .trainer-header { display: flex; gap: 25px; flex-direction: column; align-items: center; }
         
-        .avatar-box { width: 140px; height: 140px; border-radius: 30px; background: #000; border: 2px dashed var(--border); cursor: pointer; overflow: hidden; display: flex; align-items: center; justify-content: center; }
-        .avatar-box img { width: 100%; height: 100%; object-fit: cover; }
+        /* AVATAR REDONDO */
+        .avatar-box { 
+            width: 140px; height: 140px; border-radius: 50%; 
+            background: #000; border: 3px solid var(--border); 
+            cursor: pointer; overflow: hidden; display: flex; 
+            align-items: center; justify-content: center; position: relative;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5); transition: 0.3s;
+        }
+        .avatar-box:hover { border-color: var(--secondary); transform: scale(1.05); }
+        .avatar-box img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
 
         .form-grid { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .input-group { display: flex; flex-direction: column; gap: 5px; }
@@ -110,11 +117,15 @@
         .btn-blue { background: var(--secondary); color: white; }
         .btn-convert { background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: white; width: 100%; margin-top: 10px; padding: 15px; font-size: 0.9rem; }
 
+        /* MODAL DE CORTE AJUSTADO */
         #crop-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 9999; flex-direction: column; align-items: center; justify-content: center; }
-        .crop-wrap { width: 85vw; height: 85vw; max-width: 350px; max-height: 350px; background: #000; overflow: hidden; }
+        .crop-wrap { width: 90vw; height: 90vw; max-width: 400px; max-height: 400px; background: #111; border-radius: 10px; overflow: hidden; }
+        
+        /* Força o Cropper a mostrar uma máscara redonda */
+        .cropper-view-box, .cropper-face { border-radius: 50%; }
 
         @media (min-width: 768px) {
-            .trainer-header { flex-direction: row; align-items: flex-start; }
+            .trainer-header { flex-direction: row; align-items: center; }
             .form-grid { grid-template-columns: repeat(4, 1fr); }
             .team-grid { grid-template-columns: 1fr 1fr; }
         }
@@ -124,6 +135,8 @@
     </style>
 </head>
 <body>
+
+<div id="notification-host"></div>
 
 <div class="container">
     <div class="auth-bar">
@@ -153,7 +166,7 @@
             <div class="avatar-wrapper">
                 <div onclick="document.getElementById('file-input').click()" class="avatar-box">
                     <img id="main-avatar" style="display:none">
-                    <span id="placeholder" style="font-size:0.6rem; color:var(--text-dim)">FOTO / AVATAR</span>
+                    <span id="placeholder" style="font-size:0.6rem; color:var(--text-dim); text-align:center; padding: 10px;">ADICIONAR FOTO</span>
                 </div>
                 <input type="file" id="file-input" hidden accept="image/*">
             </div>
@@ -186,10 +199,12 @@
 </div>
 
 <div id="crop-modal">
+    <h3 style="color:white; margin-bottom: 15px; font-family: 'Unbounded'">AJUSTAR AVATAR</h3>
     <div class="crop-wrap"><img id="image-to-crop"></div>
+    <p style="color:var(--text-dim); font-size: 0.7rem; margin-top: 10px;">Arraste a imagem para posicionar</p>
     <div style="margin-top:20px; display:flex; gap:10px;">
-        <button class="btn" style="background:#444" onclick="document.getElementById('crop-modal').style.display='none'">CANCELAR</button>
-        <button class="btn btn-green" onclick="finishCrop()">SALVAR</button>
+        <button class="btn" style="background:#444; color:white;" onclick="document.getElementById('crop-modal').style.display='none'">CANCELAR</button>
+        <button class="btn btn-green" onclick="finishCrop()">FINALIZAR</button>
     </div>
 </div>
 
@@ -238,6 +253,16 @@
     };
 
     function format(str) { return str.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '); }
+
+    // NOTIFICAÇÃO CUSTOMIZADA
+    function showNotify(msg, type = 'info') {
+        const host = document.getElementById('notification-host');
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.innerHTML = `<span>${msg}</span>`;
+        host.appendChild(toast);
+        setTimeout(() => { toast.style.animation = "slideIn 0.3s ease-in reverse forwards"; setTimeout(() => toast.remove(), 300); }, 3000);
+    }
 
     function togglePassword() {
         const pass = document.getElementById('user-pass');
@@ -340,18 +365,13 @@
         const isShiny = hiddenInput.value === 'true';
         hiddenInput.value = !isShiny;
         btn.classList.toggle('active', !isShiny);
-        if (pkmnFullData[slot]) {
-            updatePkmnImage(slot, pkmnFullData[slot], !isShiny);
-        }
+        if (pkmnFullData[slot]) { updatePkmnImage(slot, pkmnFullData[slot], !isShiny); }
     }
 
-    // Função centralizada para imagem evitar desnível
     function updatePkmnImage(slot, data, isShiny) {
         const img = document.getElementById(`img-${slot}`);
-        // Prioriza artwork oficial para manter o estilo parelho
         const shinyUrl = data.sprites.other['official-artwork'].front_shiny || data.sprites.front_shiny;
         const defaultUrl = data.sprites.other['official-artwork'].front_default || data.sprites.front_default;
-        
         img.src = isShiny ? shinyUrl : defaultUrl;
         img.style.display = "block";
     }
@@ -383,12 +403,7 @@
     function updateGimmickIcon(slot) {
         const val = document.getElementById(`p${slot}-gim`).value;
         const badge = document.getElementById(`gim-badge-${slot}`);
-        if(val && gimmicks[val]) {
-            badge.style.backgroundImage = `url('${gimmicks[val]}')`;
-            badge.style.display = 'block';
-        } else {
-            badge.style.display = 'none';
-        }
+        if(val && gimmicks[val]) { badge.style.backgroundImage = `url('${gimmicks[val]}')`; badge.style.display = 'block'; } else { badge.style.display = 'none'; }
     }
 
     function updateCities() {
@@ -427,10 +442,7 @@
             hits.forEach(item => {
                 const d = document.createElement('div');
                 d.innerHTML = `<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/${item.name}.png" onerror="this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png'"> <span>${format(item.name)}</span>`;
-                d.onclick = () => {
-                    document.getElementById(`p${slot}-item`).value = format(item.name);
-                    drop.style.display = "none";
-                };
+                d.onclick = () => { document.getElementById(`p${slot}-item`).value = format(item.name); drop.style.display = "none"; };
                 drop.appendChild(d);
             });
         }
@@ -443,16 +455,13 @@
             const r = await fetch(`https://pokeapi.co/api/v2/pokemon/${name}`);
             const d = await r.json();
             pkmnFullData[slot] = d;
-            
             const isShiny = document.getElementById(`p${slot}-is-shiny`).value === 'true';
             updatePkmnImage(slot, d, isShiny);
-
             const abSelect = document.getElementById(`p${slot}-ability`);
             const curAb = abSelect.value;
             abSelect.innerHTML = '<option value="">Habilidade</option>';
             d.abilities.forEach(a => abSelect.innerHTML += `<option value="${format(a.ability.name)}">${format(a.ability.name)}</option>`);
             if (restoreData) abSelect.value = restoreData[`p${slot}-ability`]; else abSelect.value = curAb;
-            
             if(!restoreData) {
                 d.stats.forEach((s, idx) => {
                     const map = ['hp', 'atk', 'def', 'spa', 'spd', 'spe'];
@@ -502,11 +511,12 @@
     async function cloudAction(type) {
         const user = document.getElementById('user-id').value;
         const pass = document.getElementById('user-pass').value;
-        if(!user || !pass) return alert("Preencha o acesso.");
+        if(!user || !pass) return showNotify("Preencha login e senha!", "error");
+        
         if(type === 'save') {
             const sheet = {}; document.querySelectorAll('.save').forEach(el => sheet[el.id] = el.value);
             const { error } = await _supabase.from('fichas').upsert({ username: user, password: pass, data: sheet, avatar: document.getElementById('main-avatar').src }, { onConflict: 'username' });
-            if(error) alert(error.message); else alert("Sincronizado!");
+            if(error) showNotify("Erro ao salvar dados.", "error"); else showNotify("Ficha sincronizada com sucesso!", "success");
         } else {
             const { data } = await _supabase.from('fichas').select('*').eq('username', user).single();
             if(data && data.password === pass) {
@@ -526,8 +536,8 @@
                     updateGimmickIcon(i);
                     calcStats(i);
                 }
-                alert("Carregado!");
-            } else alert("Acesso negado.");
+                showNotify(`Bem-vindo de volta, ${user}!`, "success");
+            } else showNotify("Login ou senha incorretos.", "error");
         }
     }
 
@@ -538,7 +548,20 @@
             const img = document.getElementById('image-to-crop'); img.src = event.target.result;
             document.getElementById('crop-modal').style.display = 'flex';
             if(cropper) cropper.destroy();
-            cropper = new Cropper(img, { aspectRatio: 1, viewMode: 1 });
+            // SISTEMA DE MOVER IMAGEM
+            cropper = new Cropper(img, { 
+                aspectRatio: 1, 
+                viewMode: 1, 
+                dragMode: 'move', // Permite mover a imagem
+                autoCropArea: 0.8,
+                restore: false,
+                guides: false,
+                center: true,
+                highlight: false,
+                cropBoxMovable: false, // Trava a caixa de corte
+                cropBoxResizable: false, // Trava o redimensionamento da caixa
+                toggleDragModeOnDblclick: false,
+            });
         };
         reader.readAsDataURL(e.target.files[0]);
     };
@@ -549,6 +572,7 @@
         mainImg.src = canvas.toDataURL(); mainImg.style.display = 'block';
         document.getElementById('placeholder').style.display = 'none';
         document.getElementById('crop-modal').style.display = 'none';
+        showNotify("Avatar atualizado!", "success");
     }
 
     init();
