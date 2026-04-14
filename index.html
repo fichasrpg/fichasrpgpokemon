@@ -17,34 +17,36 @@
 
         .container { max-width: 1100px; margin: auto; display: flex; flex-direction: column; gap: 20px; }
 
-        /* Estilo Dashboard */
+        /* Painel do Treinador com Avatar */
         .panel { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 20px; box-shadow: 0 10px 15px rgba(0,0,0,0.3); }
-        .header-top { border-top: 4px solid var(--primary); }
+        .header-top { border-top: 4px solid var(--primary); display: flex; gap: 20px; align-items: center; }
 
-        .grid-header { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; }
+        .avatar-upload {
+            width: 100px; height: 100px; min-width: 100px;
+            background: var(--input); border: 2px dashed var(--muted);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; overflow: hidden; position: relative;
+        }
+        .avatar-upload img { width: 100%; height: 100%; object-fit: cover; }
+        .avatar-upload span { font-size: 0.6rem; color: var(--muted); text-align: center; padding: 5px; }
+
+        .grid-header { flex-grow: 1; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
 
         label { font-size: 0.75rem; font-weight: 600; color: var(--muted); text-transform: uppercase; margin-bottom: 5px; display: block; }
         input, select, textarea { background: var(--input); border: 1px solid var(--border); color: #fff; padding: 10px; border-radius: 8px; width: 100%; outline: none; font-size: 0.9rem; }
-        input:focus { border-color: var(--secondary); }
-
+        
         /* Cards do Time */
         .team-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 15px; }
-        .pkmn-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 15px; display: flex; flex-direction: column; gap: 12px; transition: 0.3s; }
-        .pkmn-card:hover { border-color: var(--muted); }
-
+        .pkmn-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 15px; display: flex; flex-direction: column; gap: 12px; }
         .pkmn-top { display: grid; grid-template-columns: 80px 1fr; gap: 12px; }
         .sprite-box { width: 80px; height: 80px; background: #0f172a; border-radius: 12px; border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; }
         .sprite-box img { width: 75px; height: 75px; display: none; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
 
-        /* Busca */
-        .search-area { position: relative; }
         .dropdown { position: absolute; top: 100%; left: 0; right: 0; background: #1e293b; border: 1px solid var(--secondary); border-radius: 8px; max-height: 150px; overflow-y: auto; z-index: 10; display: none; }
         .dropdown div { padding: 10px; cursor: pointer; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
         .dropdown div:hover { background: var(--secondary); }
 
-        .pkmn-stats { display: grid; grid-template-columns: 1fr 80px; gap: 10px; }
         .moves-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; }
-
         .btn-save { background: var(--secondary); color: white; border: none; padding: 15px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; text-transform: uppercase; margin-top: 10px; }
         .status { text-align: center; font-size: 0.8rem; color: #10b981; margin-top: 5px; opacity: 0; }
         .status.show { opacity: 1; }
@@ -54,12 +56,54 @@
 
 <div class="container">
     <div class="panel header-top">
-        <label>Treinador Pokémon</label>
+        <div class="avatar-upload" onclick="document.getElementById('avatar-input').click()">
+            <img id="avatar-img" style="display:none">
+            <span id="avatar-placeholder">Foto do Treinador</span>
+        </div>
+        <input type="file" id="avatar-input" hidden accept="image/*" onchange="loadAvatar(event)">
+        
         <div class="grid-header">
-            <input type="text" id="t-name" class="save" placeholder="Nome">
-            <input type="text" id="t-class" class="save" placeholder="Classe">
-            <input type="text" id="t-region" class="save" placeholder="Região">
-            <input type="number" id="t-money" class="save" placeholder="Dinheiro">
+            <div><label>Nome</label><input type="text" id="t-name" class="save" placeholder="Nome"></div>
+            <div>
+                <label>Classe</label>
+                <select id="t-class" class="save">
+                    <option value="">Selecionar...</option>
+                    <option value="Treinador">Treinador</option>
+                    <option value="Coordenador">Coordenador</option>
+                    <option value="Criador">Criador</option>
+                    <option value="Guarda">Guarda</option>
+                    <option value="Policial">Policial</option>
+                    <option value="Fotógrafo">Fotógrafo</option>
+                    <option value="Enfermeiro">Enfermeiro</option>
+                    <option value="Arqueólogo">Arqueólogo</option>
+                    <option value="Professor">Professor</option>
+                    <option value="Pesquisador">Pesquisador</option>
+                    <option value="Fazendeiro">Fazendeiro</option>
+                    <option value="Rocket">Rocket</option>
+                    <option value="Cientista">Cientista</option>
+                </select>
+            </div>
+            <div>
+                <label>Região</label>
+                <select id="t-region" class="save" onchange="updateCities()">
+                    <option value="">Selecionar...</option>
+                    <option value="Kanto">Kanto</option>
+                    <option value="Johto">Johto</option>
+                    <option value="Hoenn">Hoenn</option>
+                    <option value="Sinnoh">Sinnoh</option>
+                    <option value="Unova">Unova</option>
+                    <option value="Kalos">Kalos</option>
+                    <option value="Alola">Alola</option>
+                    <option value="Galar">Galar</option>
+                    <option value="Paldea">Paldea</option>
+                </select>
+            </div>
+            <div>
+                <label>Cidade</label>
+                <select id="t-city" class="save">
+                    <option value="">Aguardando região...</option>
+                </select>
+            </div>
         </div>
     </div>
 
@@ -67,20 +111,28 @@
 
     <div class="panel">
         <label>Notas e Inventário</label>
-        <textarea id="notes" rows="4" class="save" placeholder="Sua jornada começa aqui..."></textarea>
+        <textarea id="notes" rows="4" class="save" placeholder="Anote seus itens e jornada..."></textarea>
         <button class="btn-save" onclick="exportData()">Exportar Ficha (.JSON)</button>
-        <div id="status" class="status">Salvo com sucesso!</div>
+        <div id="status" class="status">💾 Sincronizado!</div>
     </div>
 </div>
 
 <script>
     let allPkmn = [];
     const moveCache = {};
-    const natures = ['Adamant', 'Bashful', 'Bold', 'Brave', 'Calm', 'Careful', 'Docile', 'Gentle', 'Hardy', 'Hasty', 'Impish', 'Jolly', 'Lonely', 'Mild', 'Modest', 'Naive', 'Naughty', 'Quiet', 'Quirky', 'Rash', 'Relaxed', 'Sassy', 'Serious', 'Timid'];
+    const worldData = {
+        "Kanto": ["Pallet Town", "Viridian City", "Pewter City", "Cerulean City", "Vermilion City", "Lavender Town", "Celadon City", "Fuchsia City", "Saffron City", "Cinnabar Island"],
+        "Johto": ["New Bark Town", "Cherrygrove City", "Violet City", "Azalea Town", "Goldenrod City", "Ecruteak City", "Olivine City", "Cianwood City", "Mahogany Town", "Blackthorn City"],
+        "Hoenn": ["Littleroot Town", "Oldale Town", "Petalburg City", "Rustboro City", "Dewford Town", "Slateport City", "Mauville City", "Verdanturf Town", "Fallarbor Town", "Lavaridge Town", "Fortree City", "Lilycove City", "Mossdeep City", "Sootopolis City", "Ever Grande City"],
+        "Sinnoh": ["Twinleaf Town", "Sandgem Town", "Jubilife City", "Oreburgh City", "Floaroma Town", "Eterna City", "Hearthome City", "Solaceon Town", "Veilstone City", "Pastoria City", "Celestic Town", "Canalave City", "Snowpoint City", "Sunyshore City"],
+        "Unova": ["Nuvema Town", "Accumula Town", "Striaton City", "Nacrene City", "Castelia City", "Nimbasa City", "Driftveil City", "Mistralton City", "Icirrus City", "Opelucid City", "Humilau City"],
+        "Kalos": ["Vaniville Town", "Aquacorde Town", "Santalune City", "Lumiose City", "Camphrier Town", "Cyllage City", "Ambrette Town", "Shalour City", "Coumarine City", "Laverre City", "Dendemille Town", "Anistar City", "Couriway Town", "Snowbelle City"],
+        "Alola": ["Hau'oli City", "Heahea City", "Paniola Town", "Konikoni City", "Malie City", "Tapu Village", "Seafolk Village"],
+        "Galar": ["Postwick", "Wedgehurst", "Motostoke", "Turffield", "Hulbury", "Hammerlocke", "Stow-on-Side", "Ballonlea", "Circhester", "Spikemuth", "Wyndon"],
+        "Paldea": ["Cabo Poco", "Mesagoza", "Cortondo", "Artazon", "Levincia", "Cascarrafa", "Porto Marinada", "Medali", "Montenevera", "Alfornada", "Glaseado"]
+    };
 
-    function format(str) {
-        return str.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-    }
+    function format(str) { return str.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '); }
 
     async function init() {
         renderSlots();
@@ -92,29 +144,21 @@
 
     function renderSlots() {
         const team = document.getElementById('team');
+        const natures = ['Adamant', 'Bashful', 'Bold', 'Brave', 'Calm', 'Careful', 'Docile', 'Gentle', 'Hardy', 'Hasty', 'Impish', 'Jolly', 'Lonely', 'Mild', 'Modest', 'Naive', 'Naughty', 'Quiet', 'Quirky', 'Rash', 'Relaxed', 'Sassy', 'Serious', 'Timid'];
         for(let i=1; i<=6; i++) {
             team.innerHTML += `
                 <div class="pkmn-card">
                     <div class="pkmn-top">
                         <div class="sprite-box"><img id="img-${i}"></div>
-                        <div class="search-area">
+                        <div style="position:relative">
                             <label>Pokémon #${i}</label>
                             <input type="text" id="p${i}-name" class="save" placeholder="Buscar..." oninput="doSearch(${i})" autocomplete="off">
                             <div id="drop-${i}" class="dropdown"></div>
                         </div>
                     </div>
-                    <div class="pkmn-stats">
-                        <div>
-                            <label>Nature</label>
-                            <select id="p${i}-nature" class="save">
-                                <option value="">Selecionar...</option>
-                                ${natures.map(n => `<option value="${n}">${n}</option>`).join('')}
-                            </select>
-                        </div>
-                        <div>
-                            <label>Lvl</label>
-                            <input type="number" id="p${i}-lvl" class="save" value="1" onchange="updateMoves(${i})">
-                        </div>
+                    <div style="display:grid; grid-template-columns: 1fr 60px; gap:10px">
+                        <select id="p${i}-nature" class="save"><option value="">Nature</option>${natures.map(n=>`<option value="${n}">${n}</option>`).join('')}</select>
+                        <input type="number" id="p${i}-lvl" class="save" value="1" onchange="updateMoves(${i})">
                     </div>
                     <div class="moves-grid">
                         <select id="p${i}-m1" class="save"><option value="">Golpe 1</option></select>
@@ -126,6 +170,30 @@
         }
     }
 
+    function updateCities() {
+        const region = document.getElementById('t-region').value;
+        const citySelect = document.getElementById('t-city');
+        const savedCity = localStorage.getItem('t-city');
+        citySelect.innerHTML = '<option value="">Selecionar cidade...</option>';
+        if(worldData[region]) {
+            worldData[region].forEach(c => citySelect.innerHTML += `<option value="${c}">${c}</option>`);
+        }
+        if(savedCity) citySelect.value = savedCity;
+    }
+
+    function loadAvatar(e) {
+        const reader = new FileReader();
+        reader.onload = function() {
+            const dataURL = reader.result;
+            const img = document.getElementById('avatar-img');
+            img.src = dataURL; img.style.display = 'block';
+            document.getElementById('avatar-placeholder').style.display = 'none';
+            localStorage.setItem('userAvatar', dataURL);
+        };
+        reader.readAsDataURL(e.target.files[0]);
+    }
+
+    // (As funções doSearch, selectPkmn, updateMoves, save e loadSaved permanecem com a lógica otimizada da v3.1)
     function doSearch(slot) {
         const q = document.getElementById(`p${slot}-name`).value.toLowerCase();
         const drop = document.getElementById(`drop-${slot}`);
@@ -159,31 +227,22 @@
         const moves = moveCache[slot];
         if(!moves) return;
         const lvl = parseInt(document.getElementById(`p${slot}-lvl`).value) || 1;
+        // Filtra golpes por level-up em qualquer versão (incluindo futuros dados da API)
         const available = moves.filter(m => m.version_group_details.some(d => d.move_learn_method.name === 'level-up' && d.level_learned_at <= lvl)).map(m => m.move.name);
         const unique = [...new Set(available)].map(format).sort();
-        
         for(let i=1; i<=4; i++) {
             const sel = document.getElementById(`p${slot}-m${i}`);
             const old = sel.value;
             sel.innerHTML = '<option value="">Golpe</option>';
-            unique.forEach(m => {
-                const opt = document.createElement('option');
-                opt.value = m; opt.innerText = m;
-                sel.appendChild(opt);
-            });
+            unique.forEach(m => sel.innerHTML += `<option value="${m}">${m}</option>`);
             sel.value = old;
         }
     }
 
     function save() {
         document.querySelectorAll('.save').forEach(el => localStorage.setItem(el.id, el.value));
-        for(let i=1; i<=6; i++) {
-            const img = document.getElementById(`img-${i}`).src;
-            if(img) localStorage.setItem(`img-${i}`, img);
-        }
         const s = document.getElementById('status');
-        s.classList.add('show');
-        setTimeout(() => s.classList.remove('show'), 2000);
+        s.classList.add('show'); setTimeout(() => s.classList.remove('show'), 2000);
     }
 
     function loadSaved() {
@@ -191,14 +250,16 @@
             const v = localStorage.getItem(el.id);
             if(v) el.value = v;
         });
+        updateCities();
+        const savedAvatar = localStorage.getItem('userAvatar');
+        if(savedAvatar) {
+            const img = document.getElementById('avatar-img');
+            img.src = savedAvatar; img.style.display = 'block';
+            document.getElementById('avatar-placeholder').style.display = 'none';
+        }
         for(let i=1; i<=6; i++) {
-            const src = localStorage.getItem(`img-${i}`);
-            if(src) {
-                const img = document.getElementById(`img-${i}`);
-                img.src = src; img.style.display = "block";
-                const n = document.getElementById(`p${i}-name`).value;
-                if(n) fetchMovesSilently(i, n.toLowerCase().replace(/ /g, '-'));
-            }
+            const n = document.getElementById(`p${i}-name`).value;
+            if(n) fetchMovesSilently(i, n.toLowerCase().replace(/ /g, '-'));
         }
     }
 
@@ -206,6 +267,9 @@
         const r = await fetch(`https://pokeapi.co/api/v2/pokemon/${name}`);
         if(r.ok) {
             const d = await r.json();
+            const img = document.getElementById(`img-${slot}`);
+            img.src = d.sprites.other['official-artwork'].front_default || d.sprites.front_default;
+            img.style.display = 'block';
             moveCache[slot] = d.moves;
             updateMoves(slot);
         }
@@ -217,7 +281,7 @@
         const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
-        a.download = 'ficha.json';
+        a.download = 'ficha_rpg.json';
         a.click();
     }
 
