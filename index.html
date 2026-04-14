@@ -3,38 +3,293 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PokéSheet Pro - RPG</title>
+    <title>PokéSheet Ultra - RPG</title>
     <style>
         :root {
-            --poke-red: #ff1c1c;
-            --poke-dark-red: #b30000;
+            --poke-red: #ef5350;
             --poke-blue: #2a75bb;
             --poke-yellow: #ffcb05;
-            --screen-bg: #90ad98; /* Verde clássico de GameBoy */
+            --dark: #333;
+            --panel: #f4f4f4;
         }
 
         body {
-            font-family: 'Courier New', Courier, monospace;
-            background-color: #333;
-            display: flex;
-            justify-content: center;
-            padding: 20px;
-            color: #333;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #222;
+            margin: 0;
+            padding: 10px;
+            color: var(--dark);
         }
 
         .pokedex {
-            width: 100%;
-            max-width: 950px;
+            max-width: 1100px;
+            margin: auto;
             background: var(--poke-red);
-            border: 8px solid #333;
             border-radius: 20px;
-            padding: 20px;
-            box-shadow: 15px 15px 0px #222;
+            border: 6px solid var(--dark);
+            padding: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
 
-        .header-light {
-            width: 40px;
-            height: 40px;
+        /* Top Bar */
+        .trainer-bar {
+            background: white;
+            padding: 10px;
+            border-radius: 10px;
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+            border: 3px solid var(--dark);
+        }
+
+        /* Grid de Pokémon */
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .pkmn-card {
+            background: #fff;
+            border: 3px solid var(--dark);
+            border-radius: 12px;
+            padding: 8px;
+            display: grid;
+            grid-template-columns: 70px 1fr;
+            gap: 10px;
+            position: relative;
+        }
+
+        .pkmn-left { text-align: center; }
+        
+        .sprite-box {
+            width: 64px; height: 64px;
+            background: #90ad98;
+            border: 2px solid var(--dark);
+            border-radius: 5px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        
+        .sprite-box img { width: 60px; height: 60px; display: none; }
+
+        .search-box { position: relative; }
+        .dropdown {
+            position: absolute; width: 100%; max-height: 120px;
+            background: white; border: 1px solid #ccc;
+            overflow-y: auto; z-index: 100; display: none;
+            font-size: 0.8em;
+        }
+        .dropdown div { padding: 5px; cursor: pointer; border-bottom: 1px solid #eee; }
+        .dropdown div:hover { background: var(--poke-yellow); }
+
+        /* Inputs menores */
+        input, select, textarea {
+            width: 100%; border: 1px solid #ccc; border-radius: 4px;
+            font-size: 0.85em; padding: 4px; box-sizing: border-box;
+        }
+
+        .moves-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 4px;
+            margin-top: 5px; grid-column: span 2;
+        }
+
+        /* Footer */
+        .bottom-section {
+            display: grid; grid-template-columns: 1fr 300px; gap: 10px;
+        }
+        .notes-area { background: white; padding: 10px; border-radius: 10px; border: 3px solid var(--dark); }
+
+        .btn-export {
+            width: 100%; padding: 10px; background: var(--poke-blue); color: white;
+            border: none; border-radius: 5px; font-weight: bold; cursor: pointer;
+        }
+
+        .loading-label { font-size: 0.7em; color: blue; display: none; }
+    </style>
+</head>
+<body>
+
+<div class="pokedex">
+    <div class="trainer-bar">
+        <input type="text" id="t-name" class="save" placeholder="Nome do Treinador">
+        <input type="text" id="t-class" class="save" placeholder="Classe">
+        <input type="text" id="t-region" class="save" placeholder="Região">
+        <input type="number" id="t-money" class="save" placeholder="Dinheiro">
+    </div>
+
+    <div class="team-grid" id="team-container">
+        </div>
+
+    <div class="bottom-section">
+        <div class="notes-area">
+            <label style="font-weight: bold; font-size: 0.8em;">INVENTÁRIO E NOTAS:</label>
+            <textarea id="notes" rows="4" class="save" placeholder="Itens, missões, etc..."></textarea>
+        </div>
+        <div style="display:flex; flex-direction:column; justify-content: space-between;">
+            <button class="btn-export" onclick="exportData()">BAIXAR FICHA (.JSON)</button>
+            <div id="status" style="color: white; font-size: 0.8em; text-align: center;">💾 Tudo pronto!</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let allPkmn = [];
+    const moveCache = {}; // Cache para não baixar os mesmos golpes várias vezes
+
+    async function init() {
+        const resp = await fetch('https://pokeapi.co/api/v2/pokemon?limit=1025');
+        const data = await resp.json();
+        allPkmn = data.results;
+        renderSlots();
+        loadSaved();
+    }
+
+    function renderSlots() {
+        const container = document.getElementById('team-container');
+        for(let i=1; i<=6; i++) {
+            container.innerHTML += `
+                <div class="pkmn-card">
+                    <div class="pkmn-left">
+                        <div class="sprite-box"><img id="img-${i}"></div>
+                        <input type="number" id="p${i}-lvl" class="save" placeholder="Lvl" value="1" onchange="updateMoves(${i})">
+                    </div>
+                    <div class="pkmn-right">
+                        <div class="search-box">
+                            <input type="text" id="p${i}-name" class="save" placeholder="Buscar Pokémon..." oninput="handleSearch(${i})">
+                            <div id="drop-${i}" class="dropdown"></div>
+                        </div>
+                        <input type="text" id="p${i}-nick" class="save" placeholder="Apelido" style="margin-top:4px">
+                        <span id="load-${i}" class="loading-label">Carregando golpes...</span>
+                    </div>
+                    <div class="moves-grid">
+                        <select id="p${i}-m1" class="save move-select"><option value="">Golpe 1</option></select>
+                        <select id="p${i}-m2" class="save move-select"><option value="">Golpe 2</option></select>
+                        <select id="p${i}-m3" class="save move-select"><option value="">Golpe 3</option></select>
+                        <select id="p${i}-m4" class="save move-select"><option value="">Golpe 4</option></select>
+                    </div>
+                </div>
+            `;
+        }
+    }
+
+    function handleSearch(slot) {
+        const input = document.getElementById(`p${slot}-name`);
+        const drop = document.getElementById(`drop-${slot}`);
+        const query = input.value.toLowerCase();
+        drop.innerHTML = "";
+        if(query.length < 2) { drop.style.display="none"; return; }
+        
+        const matches = allPkmn.filter(p => p.name.includes(query)).slice(0, 5);
+        if(matches.length) {
+            drop.style.display="block";
+            matches.forEach(p => {
+                const d = document.createElement('div');
+                d.innerText = p.name.toUpperCase();
+                d.onclick = () => selectPkmn(slot, p.name);
+                drop.appendChild(d);
+            });
+        }
+    }
+
+    async function selectPkmn(slot, name) {
+        document.getElementById(`p${slot}-name`).value = name;
+        document.getElementById(`drop-${slot}`).style.display = "none";
+        
+        // Sprite
+        const resp = await fetch(`https://pokeapi.co/api/v2/pokemon/${name}`);
+        const data = await resp.json();
+        const img = document.getElementById(`img-${slot}`);
+        img.src = data.sprites.front_default;
+        img.style.display = "block";
+        
+        // Guardar dados brutos do Pokémon para filtrar moves depois
+        moveCache[slot] = data.moves;
+        updateMoves(slot);
+        save();
+    }
+
+    function updateMoves(slot) {
+        const movesData = moveCache[slot];
+        if(!movesData) return;
+        
+        const lvl = parseInt(document.getElementById(`p${slot}-lvl`).value) || 1;
+        
+        // Filtra moves que aprende por level-up até o nível atual
+        const availableMoves = movesData.filter(m => {
+            return m.version_group_details.some(d => 
+                d.move_learn_method.name === 'level-up' && d.level_learned_at <= lvl
+            );
+        }).map(m => m.move.name).sort();
+
+        // Atualiza os 4 selects de golpes
+        for(let m=1; m<=4; m++) {
+            const select = document.getElementById(`p${slot}-m${m}`);
+            const currentVal = select.value;
+            select.innerHTML = '<option value="">-- Selecione --</option>';
+            [...new Set(availableMoves)].forEach(moveName => {
+                const opt = document.createElement('option');
+                opt.value = moveName;
+                opt.innerText = moveName.replace('-', ' ');
+                select.appendChild(opt);
+            });
+            select.value = currentVal; // Tenta manter o golpe se ele ainda for válido
+        }
+    }
+
+    // Salvamento
+    function save() {
+        document.querySelectorAll('.save').forEach(el => {
+            localStorage.setItem(el.id, el.value);
+        });
+        // Salva também o link da imagem atual
+        for(let i=1; i<=6; i++) {
+            const img = document.getElementById(`img-${i}`);
+            if(img.src) localStorage.setItem(`img-${i}`, img.src);
+        }
+    }
+
+    function loadSaved() {
+        document.querySelectorAll('.save').forEach(el => {
+            const v = localStorage.getItem(el.id);
+            if(v) el.value = v;
+        });
+        for(let i=1; i<=6; i++) {
+            const src = localStorage.getItem(`img-${i}`);
+            if(src) {
+                const img = document.getElementById(`img-${i}`);
+                img.src = src; img.style.display = "block";
+                // Tenta carregar os golpes novamente para o seletor funcionar
+                const name = document.getElementById(`p${i}-name`).value;
+                if(name) fetchMovesSilently(i, name);
+            }
+        }
+    }
+
+    async function fetchMovesSilently(slot, name) {
+        const resp = await fetch(`https://pokeapi.co/api/v2/pokemon/${name}`);
+        const data = await resp.json();
+        moveCache[slot] = data.moves;
+        updateMoves(slot);
+    }
+
+    function exportData() {
+        const data = {};
+        document.querySelectorAll('.save').forEach(el => data[el.id] = el.value);
+        const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'ficha_pokemon.json';
+        a.click();
+    }
+
+    document.addEventListener('input', save);
+    init();
+</script>
+
+</body>
+</html>            height: 40px;
             background: #00f2ff;
             border: 4px solid white;
             border-radius: 50%;
