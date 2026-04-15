@@ -779,7 +779,13 @@
     function updateMoves(slot, restoreData = null) {
         const moves = moveCache[slot]; if(!moves) return;
         const lvl = parseInt(document.getElementById(`p${slot}-lvl`).value) || 5;
-        const avail = moves.filter(m => m.version_group_details.some(vd => vd.move_learn_method.name === 'level-up' && vd.level_learned_at <= lvl)).map(m => m.move.name);
+        
+        // FILTRAGEM DE GOLPES: LEVEL-UP (ATÉ O LVL ATUAL) + EGG MOVES (EM QUALQUER LVL)
+        const avail = moves.filter(m => m.version_group_details.some(vd => 
+            (vd.move_learn_method.name === 'level-up' && vd.level_learned_at <= lvl) || 
+            (vd.move_learn_method.name === 'egg')
+        )).map(m => m.move.name);
+        
         const unique = [...new Set(avail)].map(format).sort();
         for(let i=1; i<=4; i++) {
             const s = document.getElementById(`p${slot}-m${i}`);
@@ -794,6 +800,7 @@
         const rawBag = document.getElementById('t-bag').value;
         const bagItems = rawBag.split(/[\n,]+/).map(item => item.trim()).filter(item => item !== "");
         
+        // Formata os itens da bolsa
         let bagText = ""; 
         if(bagItems.length > 0) {
             bagItems.forEach(item => { bagText += `╰┈➤ ${item}\n`; });
@@ -801,13 +808,17 @@
             bagText = `╰┈➤ \n`;
         }
 
+        // Formata os pokémons do time
         let pkmnText = "";
         for(let i=1; i<=6; i++) {
             const pName = document.getElementById(`p${i}-name`).value;
             const pNick = document.getElementById(`p${i}-nick`).value;
             const pLvl = document.getElementById(`p${i}-lvl`).value;
-            if(pName) pkmnText += `╰┈➤ ${pNick || pName} (Lv. ${pLvl})${document.getElementById(`p${i}-is-shiny`).value === 'true' ? ' ✨' : ''}\n`;
-            else pkmnText += `╰┈➤ Vazio\n`;
+            if(pName) {
+                pkmnText += `╰┈➤ ${pNick || pName} (Lv. ${pLvl})${document.getElementById(`p${i}-is-shiny`).value === 'true' ? ' ✨' : ''}\n`;
+            } else {
+                pkmnText += `╰┈➤ Vazio\n`;
+            }
         }
 
         const template = `‎‧₊˚✧Ficha do Treinador✧˚₊‧‎\n\n` +
